@@ -1,0 +1,35 @@
+.card {
+  border: 1px solid black;
+  border-radius: 5px;
+  width: 100px;
+  height: 140px;
+}
+
+body {
+  background-color: black;
+}
+
+main {
+  width: 1300px;
+  margin: 0 auto;
+  padding-top: 75px;
+}
+
+header {
+  display: block;
+  width: 300px;
+  height: 50px;
+  color: white;
+  font-size: 48px;
+  margin: 0 auto;
+}
+
+#game-board {
+  margin: 0 auto;
+  width: 900px;
+  height: 500px;
+  background-image: url("../felt_background.jpg");
+  background-color: green;
+  background-size: cover;
+  margin-top: 75px;
+}
