@@ -1,5 +1,5 @@
 .card {
-  position: relative;
+  position: absolute;
   border: 1px solid black;
   border-radius: 5px;
   width: 100px;
@@ -33,5 +33,59 @@ header {
   background-color: green;
   background-size: cover;
   margin-top: 75px;
+  position: relative;
   overflow: hidden;
+}
+
+#modal-screen {
+  display: none;
+}
+
+#modal-screen.active {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+.modal-content {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 150px;
+  width: 250px;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 3px;
+  opacity: 1.0;
+  z-index: 2;
+}
+
+#modal-content-alt {
+  display: none;
+}
+
+#modal-content-alt.active {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 150px;
+  width: 250px;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 3px;
+  opacity: 1.0;
+  z-index: 3;
+}
+
+.modal-form {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
