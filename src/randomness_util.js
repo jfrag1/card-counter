@@ -7,9 +7,10 @@ const randomSuit = () => {
   return ["HEART-", "DIAMOND-", "CLUB-", "SPADE-"][idx];
 }
 
-export const buildCard = (num) => {
+export const buildCard = (num, id) => {
   const card = document.createElement("img");
   card.setAttribute("src", `./dist/card_imgs/${randomSuit()}${num}.svg`);
   card.setAttribute("class", "card");
+  card.setAttribute("id", id);
   return card;
 }
