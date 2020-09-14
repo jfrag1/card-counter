@@ -46,13 +46,13 @@ export default [
     left: -120,
     xVel: 0.16,
     yVel: -0.16,
-    startTime: 10500
+    startTime: 10200
   },
   {
     top: 50,
     left: 900,
     xVel: -0.16,
     yVel: 0.16,
-    startTime: 10500
+    startTime: 10200
   },
 ]

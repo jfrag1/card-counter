@@ -5,6 +5,6 @@ import levels from './levels/all_levels';
 document.addEventListener("DOMContentLoaded", () => {
 
   const game = new Game(levels);
-  game.playSpecificLevel(3);
+  game.playLevel();
 
 });
