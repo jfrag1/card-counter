@@ -112,7 +112,7 @@ class Game {
     this.playLevel = this.playLevel.bind(this);
   }
 
-  // options takes keys top, left, xVel, yVel, startTime
+  // options takes keys top, left, xVel, yVel, startTime, optionally angularVel
   renderCard(options) {
     setTimeout(() => {
       this.cardId += 1;
@@ -122,21 +122,48 @@ class Game {
   
       card.style.top = `${options.top}px`;
       card.style.left = `${options.left}px`;
-  
+
+      if (options.scaleTime) card.style.display = "none";
       document.getElementById("game-board").appendChild(card);
+      
       let start;
       const that = this;
-  
+      
       function step(timestamp) {
         if (start === undefined)
-          start = timestamp;
+        start = timestamp;
         const elapsed = timestamp - start;
         const xTrans = options.xVel * elapsed;
         const yTrans = options.yVel * elapsed;
+        
+        let transString = 'translateX(' + (xTrans) + 'px) translateY(' + (yTrans) + 'px)';
+        if (options.angularVel) {
+          transString +=' rotate(' + (options.angularVel * elapsed) + 'deg)';
+        }
+
+        if (options.scaleTime) {
+          let factor
+          if (options.scaleTime < elapsed) {
+            factor = 2 - elapsed / options.scaleTime
+          } else {
+            factor = elapsed / options.scaleTime
+          }
+          transString += "scale(" + factor + ", " + factor + ")";
+          
+          if (elapsed > 100) {
+            card.style.display = "block";
+          }
+
+          if (elapsed > 2 * options.scaleTime) {
+            if (parseInt(card.id) === that.levels[that.currentLevel - 1].length) {
+              setTimeout(that.renderModal, 800);
+            }
+            card.remove();
+            return;
+          }
+        }
     
-        card.style.transform =
-          'translateX(' + (xTrans) + 'px) translateY(' + (yTrans) + 'px)'
-  
+        card.style.transform = transString;
     
         if (that.inBounds(options.left + xTrans, options.top + yTrans)) {
           window.requestAnimationFrame(step);
@@ -273,7 +300,7 @@ __webpack_require__.r(__webpack_exports__);
 document.addEventListener("DOMContentLoaded", () => {
 
   const game = new _game__WEBPACK_IMPORTED_MODULE_0__["default"](_levels_all_levels__WEBPACK_IMPORTED_MODULE_1__["default"]);
-  game.playSpecificLevel(3);
+  game.playSpecificLevel(5);
 
 });
 
@@ -291,11 +318,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _level1__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./level1 */ "./src/levels/level1.js");
 /* harmony import */ var _level2__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./level2 */ "./src/levels/level2.js");
 /* harmony import */ var _level3__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./level3 */ "./src/levels/level3.js");
+/* harmony import */ var _level4__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./level4 */ "./src/levels/level4.js");
+/* harmony import */ var _level5__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./level5 */ "./src/levels/level5.js");
 
 
 
 
-/* harmony default export */ __webpack_exports__["default"] = ([_level1__WEBPACK_IMPORTED_MODULE_0__["default"], _level2__WEBPACK_IMPORTED_MODULE_1__["default"], _level3__WEBPACK_IMPORTED_MODULE_2__["default"]]);
+
+
+/* harmony default export */ __webpack_exports__["default"] = ([_level1__WEBPACK_IMPORTED_MODULE_0__["default"], _level2__WEBPACK_IMPORTED_MODULE_1__["default"], _level3__WEBPACK_IMPORTED_MODULE_2__["default"], _level4__WEBPACK_IMPORTED_MODULE_3__["default"], _level5__WEBPACK_IMPORTED_MODULE_4__["default"]]);
 
 /***/ }),
 
@@ -433,16 +464,213 @@ __webpack_require__.r(__webpack_exports__);
     left: -120,
     xVel: 0.16,
     yVel: -0.16,
-    startTime: 10500
+    startTime: 10200
   },
   {
     top: 50,
     left: 900,
     xVel: -0.16,
     yVel: 0.16,
-    startTime: 10500
+    startTime: 10200
   },
 ]);
+
+/***/ }),
+
+/***/ "./src/levels/level4.js":
+/*!******************************!*\
+  !*** ./src/levels/level4.js ***!
+  \******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = ([
+  {
+    top: 20,
+    left: -120,
+    xVel: 0.45,
+    yVel: 0.15,
+    startTime: 1000
+  },
+  {
+    top: 500,
+    left: 600,
+    xVel: -0.08,
+    yVel: -0.40,
+    startTime: 2000
+  },
+  {
+    top: 370,
+    left: -120,
+    xVel: 0.39,
+    yVel: -0.17,
+    startTime: 3200
+  },
+  {
+    top: -150,
+    left: 700,
+    xVel: -0.35,
+    yVel: 0.25,
+    startTime: 4500
+  },
+  {
+    top: 30,
+    left: -120,
+    xVel: 0.50,
+    yVel: 0,
+    startTime: 6000
+  },
+  {
+    top: 170,
+    left: 900,
+    xVel: -0.50,
+    yVel: 0,
+    startTime: 6500
+  },
+  {
+    top: 310,
+    left: -120,
+    xVel: 0.50,
+    yVel: 0,
+    startTime: 7000
+  },
+  {
+    top: -150,
+    left: 150,
+    xVel: 0,
+    yVel: 0.40,
+    startTime: 9500
+  },
+  {
+    top: 500,
+    left: 400,
+    xVel: 0,
+    yVel: -0.40,
+    startTime: 10000
+  },
+  {
+    top: -150,
+    left: 650,
+    xVel: 0,
+    yVel: 0.40,
+    startTime: 10500
+  },
+  {
+    top: -150,
+    left: -100,
+    xVel: 0.40,
+    yVel: 0.25,
+    startTime: 12000
+  },
+  {
+    top: -150,
+    left: 900,
+    xVel: -0.40,
+    yVel: 0.25,
+    startTime: 12000
+  },
+  {
+    top: 500,
+    left: -100,
+    xVel: 0.40,
+    yVel: -0.25,
+    startTime: 14500
+  },
+  {
+    top: 500,
+    left: 900,
+    xVel: -0.40,
+    yVel: -0.25,
+    startTime: 14500
+  },
+]);
+
+/***/ }),
+
+/***/ "./src/levels/level5.js":
+/*!******************************!*\
+  !*** ./src/levels/level5.js ***!
+  \******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = ([
+  {
+    top: 65,
+    left: -100,
+    xVel: 0.35,
+    yVel: 0,
+    startTime: 1000
+  },
+  {
+    top: 285,
+    left: -100,
+    xVel: 0.35,
+    yVel: 0,
+    startTime: 1000
+  },
+  {
+    top: 65,
+    left: 900,
+    xVel: -0.35,
+    yVel: 0,
+    startTime: 4000
+  },
+  {
+    top: 285,
+    left: 900,
+    xVel: -0.35,
+    yVel: 0,
+    startTime: 4000
+  },
+  {
+    top: -150,
+    left: -100,
+    xVel: 0.35,
+    yVel: 0.20,
+    angularVel: 0.4,
+    startTime: 7000
+  },
+  {
+    top: -150,
+    left: 900,
+    xVel: -0.35,
+    yVel: 0.20,
+    angularVel: -0.4,
+    startTime: 8000
+  },
+  {
+    top: 500,
+    left: 900,
+    xVel: -0.35,
+    yVel: -0.20,
+    angularVel: -0.4,
+    startTime: 9000
+  },
+  {
+    top: 500,
+    left: -100,
+    xVel: 0.35,
+    yVel: -0.20,
+    angularVel: 0.4,
+    startTime: 10000
+  },
+  {
+    top: 200,
+    left: 400,
+    xVel: 0,
+    yVel: 0,
+    angularVel: 0.3,
+    startTime: 1000,
+    scaleTime: 3000
+  },
+]);
+
+// t = 0, scale = 0, t = scaleTime, scale = 1
 
 /***/ }),
 

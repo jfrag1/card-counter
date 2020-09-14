@@ -14,7 +14,7 @@ class Game {
     this.playLevel = this.playLevel.bind(this);
   }
 
-  // options takes keys top, left, xVel, yVel, startTime
+  // options takes keys top, left, xVel, yVel, startTime, optionally angularVel
   renderCard(options) {
     setTimeout(() => {
       this.cardId += 1;
@@ -24,21 +24,48 @@ class Game {
   
       card.style.top = `${options.top}px`;
       card.style.left = `${options.left}px`;
-  
+
+      if (options.scaleTime) card.style.display = "none";
       document.getElementById("game-board").appendChild(card);
+      
       let start;
       const that = this;
-  
+      
       function step(timestamp) {
         if (start === undefined)
-          start = timestamp;
+        start = timestamp;
         const elapsed = timestamp - start;
         const xTrans = options.xVel * elapsed;
         const yTrans = options.yVel * elapsed;
+        
+        let transString = 'translateX(' + (xTrans) + 'px) translateY(' + (yTrans) + 'px)';
+        if (options.angularVel) {
+          transString +=' rotate(' + (options.angularVel * elapsed) + 'deg)';
+        }
+
+        if (options.scaleTime) {
+          let factor
+          if (options.scaleTime < elapsed) {
+            factor = 2 - elapsed / options.scaleTime
+          } else {
+            factor = elapsed / options.scaleTime
+          }
+          transString += "scale(" + factor + ", " + factor + ")";
+          
+          if (elapsed > 100) {
+            card.style.display = "block";
+          }
+
+          if (elapsed > 2 * options.scaleTime) {
+            if (parseInt(card.id) === that.levels[that.currentLevel - 1].length) {
+              setTimeout(that.renderModal, 800);
+            }
+            card.remove();
+            return;
+          }
+        }
     
-        card.style.transform =
-          'translateX(' + (xTrans) + 'px) translateY(' + (yTrans) + 'px)'
-  
+        card.style.transform = transString;
     
         if (that.inBounds(options.left + xTrans, options.top + yTrans)) {
           window.requestAnimationFrame(step);
