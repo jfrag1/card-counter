@@ -5,12 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.12/css/all.css" integrity="sha384-G0fIWCsCzJIMAVNQPfjH08cyYaUtMwjJwqiRKxxE/rx96Uroj1BtIQ6MLJuheaO9" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="./dist/stylesheets/index.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600&display=swap" rel="stylesheet">
     <title>Card Counter</title>
   </head>
   <body>
     <main>
       <header>Card Counter</header>
       <div id="game-board">
+        <section id="menu-content">
+          <span>Choose a Level</span>
+          <ul id="level-index">
+            <li id="level-1"><img class="card" src="./dist/card_imgs/SPADE-1.svg" /></li>
+            <li id="level-2"><img class="card" src="./dist/card_imgs/SPADE-2.svg" /></li>
+            <li id="level-3"><img class="card" src="./dist/card_imgs/SPADE-3.svg" /></li>
+            <li id="level-4"><img class="card" src="./dist/card_imgs/SPADE-4.svg" /></li>
+            <li id="level-5"><img class="card" src="./dist/card_imgs/SPADE-5.svg" /></li>
+          </ul>
+        </section>
         <section id="modal-screen" style="background-color: rgba(169, 169, 169, 0.5)">
           <div class="modal-content">
             <span>What's the count?</span>
