@@ -110,9 +110,13 @@ class Game {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.hideModal = this.hideModal.bind(this);
     this.playLevel = this.playLevel.bind(this);
+    this.tryLevelAgain = this.tryLevelAgain.bind(this);
+    this.nextLevel = this.nextLevel.bind(this);
+    this.backToMenu = this.backToMenu.bind(this);
+    this.levelTextAnimation = this.levelTextAnimation.bind(this);
   }
 
-  // options takes keys top, left, xVel, yVel, startTime, optionally angularVel
+  // options takes keys top, left, xVel, yVel, startTime, optionally angularVel, scaleTime
   renderCard(options) {
     setTimeout(() => {
       this.cardId += 1;
@@ -226,13 +230,21 @@ class Game {
 
     const content = document.getElementById("modal-content-alt");
     if (this.count === parseInt(guessEl.innerText)) {
-      content.innerHTML = "<p>Correct! The count resets after each level.</p>";
-      setTimeout(this.hideModal, 1000);
+      if (this.currentLevel === this.levels.length) {
+        content.innerHTML = `<p>Correct! You win!</p><button id="back-to-menu">Back to menu</button>`
+      } else {
+        content.innerHTML = `<p>Correct!</p><button id="next-level">Next level</button><button id="back-to-menu">Back to menu</button>`
+        const nLevel = document.getElementById("next-level");
+        nLevel.addEventListener("click", this.nextLevel);
+      }
     } else {
-      content.innerHTML = `<p>Incorrect. The count was ${this.count}.</p><button id="try-again">Try again</button>`;
+      content.innerHTML = `<p>Incorrect. The count was ${this.count}.</p><button id="try-again">Try again</button><button id="back-to-menu">Back to menu</button>`;
       const tryAgain = document.getElementById("try-again");
-      tryAgain.addEventListener("click", this.hideModal);
+      tryAgain.addEventListener("click", this.tryLevelAgain);
     }
+    const menuButton = document.getElementById("back-to-menu");
+    menuButton.addEventListener("click", this.backToMenu);
+
     guessEl.innerText = 0;
     this.count = 0;
     content.classList.add("active");
@@ -240,31 +252,73 @@ class Game {
 
   hideModal() {
     const tryAgain = document.getElementById("try-again");
-    if (tryAgain) tryAgain.removeEventListener("click", this.hideModal);
-    this.currentLevel += 1;
-
-    if (this.currentLevel <= this.levels.length) {
-      const modal = document.getElementById("modal-screen");
-      const content = document.getElementById("modal-content-alt");
-      content.classList.remove("active");
-      modal.classList.remove("active");
-      
-      setTimeout(this.playLevel, 1000);
-    } else {
-      const content = document.getElementById("modal-content-alt");
-      content.innerHTML = "<p>You win!</p>";
+    if (tryAgain) {
+      tryAgain.removeEventListener("click", this.hideModal);
     }
+
+    const modal = document.getElementById("modal-screen");
+    const content = document.getElementById("modal-content-alt");
+    content.classList.remove("active");
+    modal.classList.remove("active");
+  }
+
+  backToMenu() {
+    this.currentLevel = 1;
+    this.hideModal();
+    const menu = document.getElementById("menu-content");
+    menu.classList.add("active");
+  }
+
+  tryLevelAgain() {
+    this.hideModal();
+    this.playLevel();
+  }
+
+  nextLevel() {
+    this.currentLevel += 1;
+    this.hideModal();
+    this.playLevel();
   }
 
   playLevel() {
-    this.levels[this.currentLevel - 1].forEach(card => {
+    setTimeout(() => this.levelTextAnimation(), 1000);
+    setTimeout(() => this.levels[this.currentLevel - 1].forEach(card => {
       this.renderCard(card);
-    });
+    }), 4000);
   }
 
   playSpecificLevel(level) {
     this.currentLevel = level;
     this.playLevel();
+  }
+
+  levelTextAnimation() {
+    const levelText = document.createElement("div");
+    levelText.setAttribute("class", "level-text");
+    levelText.innerText = `Level ${this.currentLevel}`;
+    document.getElementById("game-board").appendChild(levelText);
+
+    let start;
+
+    function step(timestamp) {
+      if (start === undefined)
+        start = timestamp;
+      const elapsed = timestamp - start;
+      const secsElapsed = elapsed / 1000;
+
+      const pos = -21 + 1106 * secsElapsed - 674.3 * secsElapsed ** 2 + 146.66 * secsElapsed ** 3;
+      const slant = (1106 - 1349 * secsElapsed + 440 * secsElapsed ** 2) / 20;
+
+      levelText.style.transform = 'translateX(' + pos + 'px) skewX(' + slant + 'deg)';
+
+      if (elapsed < 3300) { // Stop the animation after 2 seconds
+        window.requestAnimationFrame(step);
+      } else {
+        levelText.remove();
+      }
+    }
+
+    window.requestAnimationFrame(step);
   }
 
   hilo_val(num) {
@@ -293,14 +347,23 @@ class Game {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game */ "./src/game.js");
 /* harmony import */ var _levels_all_levels__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./levels/all_levels */ "./src/levels/all_levels.js");
-// import { buildCard } from './randomness_util';
 
 
 
 document.addEventListener("DOMContentLoaded", () => {
-
   const game = new _game__WEBPACK_IMPORTED_MODULE_0__["default"](_levels_all_levels__WEBPACK_IMPORTED_MODULE_1__["default"]);
-  game.playSpecificLevel(5);
+
+  const levelIndex = document.getElementById("level-index");
+  for (let i = 0; i < levelIndex.children.length; i++) {
+    levelIndex.children[i].addEventListener("click", () => {
+      game.playSpecificLevel(i + 1);
+      const menu = document.getElementById("menu-content");
+      menu.classList.remove("active");
+    });
+  }
+
+  const menu = document.getElementById("menu-content");
+  menu.classList.add("active");
 
 });
 
@@ -632,7 +695,7 @@ __webpack_require__.r(__webpack_exports__);
     left: -100,
     xVel: 0.35,
     yVel: 0.20,
-    angularVel: 0.4,
+    angularVel: 0.2,
     startTime: 7000
   },
   {
@@ -640,7 +703,7 @@ __webpack_require__.r(__webpack_exports__);
     left: 900,
     xVel: -0.35,
     yVel: 0.20,
-    angularVel: -0.4,
+    angularVel: -0.2,
     startTime: 8000
   },
   {
@@ -648,7 +711,7 @@ __webpack_require__.r(__webpack_exports__);
     left: 900,
     xVel: -0.35,
     yVel: -0.20,
-    angularVel: -0.4,
+    angularVel: -0.2,
     startTime: 9000
   },
   {
@@ -656,7 +719,7 @@ __webpack_require__.r(__webpack_exports__);
     left: -100,
     xVel: 0.35,
     yVel: -0.20,
-    angularVel: 0.4,
+    angularVel: 0.2,
     startTime: 10000
   },
   {

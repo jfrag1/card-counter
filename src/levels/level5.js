@@ -32,7 +32,7 @@ export default [
     left: -100,
     xVel: 0.35,
     yVel: 0.20,
-    angularVel: 0.4,
+    angularVel: 0.2,
     startTime: 7000
   },
   {
@@ -40,7 +40,7 @@ export default [
     left: 900,
     xVel: -0.35,
     yVel: 0.20,
-    angularVel: -0.4,
+    angularVel: -0.2,
     startTime: 8000
   },
   {
@@ -48,7 +48,7 @@ export default [
     left: 900,
     xVel: -0.35,
     yVel: -0.20,
-    angularVel: -0.4,
+    angularVel: -0.2,
     startTime: 9000
   },
   {
@@ -56,7 +56,7 @@ export default [
     left: -100,
     xVel: 0.35,
     yVel: -0.20,
-    angularVel: 0.4,
+    angularVel: 0.2,
     startTime: 10000
   },
   {
