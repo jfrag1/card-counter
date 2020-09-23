@@ -311,7 +311,7 @@ class Game {
 
       levelText.style.transform = 'translateX(' + pos + 'px) skewX(' + slant + 'deg)';
 
-      if (elapsed < 3300) { // Stop the animation after 2 seconds
+      if (elapsed < 3300) {
         window.requestAnimationFrame(step);
       } else {
         levelText.remove();
@@ -352,6 +352,32 @@ __webpack_require__.r(__webpack_exports__);
 
 document.addEventListener("DOMContentLoaded", () => {
   const game = new _game__WEBPACK_IMPORTED_MODULE_0__["default"](_levels_all_levels__WEBPACK_IMPORTED_MODULE_1__["default"]);
+  installEventListeners(game);
+
+  const menu = document.getElementById("menu-content");
+  menu.classList.add("active");
+
+});
+
+function installEventListeners(game) {
+  const showTutorial = document.getElementById("tutorial-button");
+
+  showTutorial.addEventListener("click", () => {
+    showTutorial.style.display = "none";
+
+    const tutorial = document.getElementById("tutorial");
+    tutorial.classList.add("active");
+  });
+
+  const redX = document.getElementById("exit-tutorial");
+  
+  redX.addEventListener("click", () => {
+    const tutorial = document.getElementById("tutorial");
+    tutorial.classList.remove("active");
+
+    const tutorialButton = document.getElementById("tutorial-button");
+    tutorialButton.style.display = "block";
+  });
 
   const levelIndex = document.getElementById("level-index");
   for (let i = 0; i < levelIndex.children.length; i++) {
@@ -361,11 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
       menu.classList.remove("active");
     });
   }
-
-  const menu = document.getElementById("menu-content");
-  menu.classList.add("active");
-
-});
+}
 
 /***/ }),
 

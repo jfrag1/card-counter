@@ -213,7 +213,7 @@ class Game {
 
       levelText.style.transform = 'translateX(' + pos + 'px) skewX(' + slant + 'deg)';
 
-      if (elapsed < 3300) { // Stop the animation after 2 seconds
+      if (elapsed < 3300) {
         window.requestAnimationFrame(step);
       } else {
         levelText.remove();
