@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.12/css/all.css" integrity="sha384-G0fIWCsCzJIMAVNQPfjH08cyYaUtMwjJwqiRKxxE/rx96Uroj1BtIQ6MLJuheaO9" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="./dist/stylesheets/index.css" />
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <title>Card Counter</title>
   </head>
   <body>
@@ -21,6 +22,7 @@
             <li id="level-4"><img class="card" src="./dist/card_imgs/SPADE-4.svg" /></li>
             <li id="level-5"><img class="card" src="./dist/card_imgs/SPADE-5.svg" /></li>
           </ul>
+          <button id="tutorial-button">How to play</button>
         </section>
         <section id="modal-screen" style="background-color: rgba(169, 169, 169, 0.5)">
           <div class="modal-content">
@@ -34,6 +36,70 @@
           </div>
           <div id="modal-content-alt"></div>
         </section>
+        <article id="tutorial">
+          <i id="exit-tutorial" class="fas fa-times"></i>
+          <div id="tutorial-content">
+            <div id="tutorial-col-1">
+              <span id="tutorial-col-1-header">What is card counting?</span>
+              <p id="card-counting-explain">
+                Card counting involves keeping track of a "running count" in your
+                head as you watch the cards come out. The count starts at 0, then 
+                changes depending on what cards appear. 
+                Cards valued 2-6 count as +1, 7-9 count as 0, and 10, J, Q, K, 
+                and A count as -1. The technique is widely used by professional 
+                Blackjack players to gain an advantage over the house.
+              </p>
+              <div id="diagram">
+                <div id="diagram-labels">
+                  <span>+1:</span>
+                  <span>0:</span>
+                  <span>-1:</span>
+                </div>
+                <div id="diagram-rows">
+                  <div class="diagram-row" id="plus-one-cards">
+                    <img src="./dist//card_imgs/HEART-2.svg" />
+                    <img src="./dist//card_imgs/HEART-3.svg" />
+                    <img src="./dist//card_imgs/HEART-4.svg" />
+                    <img src="./dist//card_imgs/HEART-5.svg" />
+                    <img src="./dist//card_imgs/HEART-6.svg" />
+                  </div>
+                  <div class="diagram-row" id="plus-zero-cards">
+                    <img src="./dist//card_imgs/HEART-7.svg" />
+                    <img src="./dist//card_imgs/HEART-8.svg" />
+                    <img src="./dist//card_imgs/HEART-9.svg" />
+                  </div>
+                  <div class="diagram-row" id="minus-one-cards">
+                    <img src="./dist//card_imgs/HEART-10.svg" />
+                    <img src="./dist//card_imgs/HEART-11.svg" />
+                    <img src="./dist//card_imgs/HEART-12.svg" />
+                    <img src="./dist//card_imgs/HEART-13.svg" />
+                    <img src="./dist//card_imgs/HEART-1.svg" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="tutorial-col-2">
+              <span>What is this game?</span>
+              <p id="game-explain">
+                This game is a tool to practice counting cards. Cards move across
+                the screen, and it is your job to keep the count in your head.
+                At the end of each level, the game will ask you for the count and
+                tell you if you were right or not. The count resets back to 0
+                after each level.
+              </p>
+              <span>Example</span>
+              <p>
+                Say you start a level. As always, the count starts at 0. The
+                first card is the ace of spades. An ace counts as -1, so now the
+                count is -1. Next, the 3 of hearts and the jack of diamonds shoot
+                across the screen at the same time. The count stays at -1 because
+                the 3 counts as +1 and the jack counts as -1, so they cancel each
+                other out. Before the level ends, you see the cards 2, 8, 7, and 6.
+                The correct count at the end of the level would be 1.
+              </p>
+            </div>
+          </div>
+        </article>
       </div>
     </main>
 
