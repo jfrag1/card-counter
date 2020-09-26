@@ -1,73 +1,148 @@
 export default [
   {
-    top: 65,
-    left: -100,
-    xVel: 0.35,
-    yVel: 0,
+    top: 20,
+    left: -120,
+    xVel: 0.45,
+    yVel: 0.15,
     startTime: 1000
   },
   {
-    top: 285,
-    left: -100,
-    xVel: 0.35,
-    yVel: 0,
-    startTime: 1000
+    top: 500,
+    left: 600,
+    xVel: -0.08,
+    yVel: -0.40,
+    startTime: 2000
   },
   {
-    top: 65,
-    left: 900,
-    xVel: -0.35,
-    yVel: 0,
-    startTime: 4000
-  },
-  {
-    top: 285,
-    left: 900,
-    xVel: -0.35,
-    yVel: 0,
-    startTime: 4000
+    top: 370,
+    left: -120,
+    xVel: 0.39,
+    yVel: -0.17,
+    startTime: 3200
   },
   {
     top: -150,
-    left: -100,
-    xVel: 0.35,
-    yVel: 0.20,
-    angularVel: 0.2,
+    left: 700,
+    xVel: -0.35,
+    yVel: 0.25,
+    startTime: 4500
+  },
+  {
+    top: 30,
+    left: -120,
+    xVel: 0.50,
+    yVel: 0,
+    startTime: 6000
+  },
+  {
+    top: 170,
+    left: 900,
+    xVel: -0.50,
+    yVel: 0,
+    startTime: 6500
+  },
+  {
+    top: 310,
+    left: -120,
+    xVel: 0.50,
+    yVel: 0,
     startTime: 7000
   },
   {
     top: -150,
-    left: 900,
-    xVel: -0.35,
-    yVel: 0.20,
-    angularVel: -0.2,
-    startTime: 8000
+    left: 150,
+    xVel: 0,
+    yVel: 0.40,
+    startTime: 9500
   },
   {
     top: 500,
+    left: 400,
+    xVel: 0,
+    yVel: -0.40,
+    startTime: 10000
+  },
+  {
+    top: -150,
+    left: 650,
+    xVel: 0,
+    yVel: 0.40,
+    startTime: 10500
+  },
+  {
+    top: -150,
+    left: -100,
+    xVel: 0.40,
+    yVel: 0.25,
+    startTime: 12000
+  },
+  {
+    top: -150,
     left: 900,
-    xVel: -0.35,
-    yVel: -0.20,
-    angularVel: -0.2,
-    startTime: 9000
+    xVel: -0.40,
+    yVel: 0.25,
+    startTime: 12000
   },
   {
     top: 500,
     left: -100,
-    xVel: 0.35,
-    yVel: -0.20,
-    angularVel: 0.2,
-    startTime: 10000
+    xVel: 0.40,
+    yVel: -0.25,
+    startTime: 13700
+  },
+  {
+    top: 500,
+    left: 900,
+    xVel: -0.40,
+    yVel: -0.25,
+    startTime: 13700
+  },
+  {
+    top: 100,
+    left: 120,
+    xVel: 0,
+    yVel: 0,
+    startTime: 15500,
+    angularVel: -0.18,
+    scaleTime: 2500,
+    growTo: 1.3 
+  },
+  {
+    top: 100,
+    left: 680,
+    xVel: 0,
+    yVel: 0,
+    startTime: 15500,
+    angularVel: 0.18,
+    scaleTime: 2500,
+    growTo: 1.15 
+  },
+  {
+    top: 300,
+    left: 120,
+    xVel: 0,
+    yVel: 0,
+    startTime: 15500,
+    angularVel: 0.18,
+    scaleTime: 2500,
+    growTo: 1.15 
+  },
+  {
+    top: 300,
+    left: 680,
+    xVel: 0,
+    yVel: 0,
+    startTime: 15500,
+    angularVel: -0.18,
+    scaleTime: 2500,
+    growTo: 1.15
   },
   {
     top: 200,
     left: 400,
     xVel: 0,
     yVel: 0,
-    angularVel: 0.3,
-    startTime: 1000,
-    scaleTime: 3000
+    startTime: 15500,
+    scaleTime: 2500,
   },
 ]
-
-// t = 0, scale = 0, t = scaleTime, scale = 1
