@@ -47,12 +47,14 @@ class Game {
           transString +=' rotate(' + (options.angularVel * elapsed) + 'deg)';
         }
 
+        
         if (options.scaleTime) {
           let factor
+          const scaleTo = options.growTo ? options.growTo : 1;
           if (options.scaleTime < elapsed) {
-            factor = 2 - elapsed / options.scaleTime
+            factor = (2 - elapsed / options.scaleTime) * scaleTo;
           } else {
-            factor = elapsed / options.scaleTime
+            factor = (elapsed / options.scaleTime) * scaleTo;
           }
           transString += "scale(" + factor + ", " + factor + ")";
           
@@ -95,7 +97,6 @@ class Game {
 
     this.cardId = 0;
 
-    const guessEl = document.getElementById("modal-guess");
     const minus = document.getElementById("minus");
     const plus = document.getElementById("plus");
     const btn = document.getElementById("submit");

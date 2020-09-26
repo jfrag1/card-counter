@@ -145,12 +145,14 @@ class Game {
           transString +=' rotate(' + (options.angularVel * elapsed) + 'deg)';
         }
 
+        
         if (options.scaleTime) {
           let factor
+          const scaleTo = options.growTo ? options.growTo : 1;
           if (options.scaleTime < elapsed) {
-            factor = 2 - elapsed / options.scaleTime
+            factor = (2 - elapsed / options.scaleTime) * scaleTo;
           } else {
-            factor = elapsed / options.scaleTime
+            factor = (elapsed / options.scaleTime) * scaleTo;
           }
           transString += "scale(" + factor + ", " + factor + ")";
           
@@ -193,7 +195,6 @@ class Game {
 
     this.cardId = 0;
 
-    const guessEl = document.getElementById("modal-guess");
     const minus = document.getElementById("minus");
     const plus = document.getElementById("plus");
     const btn = document.getElementById("submit");
@@ -405,13 +406,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _level3__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./level3 */ "./src/levels/level3.js");
 /* harmony import */ var _level4__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./level4 */ "./src/levels/level4.js");
 /* harmony import */ var _level5__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./level5 */ "./src/levels/level5.js");
+/* harmony import */ var _level6__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./level6 */ "./src/levels/level6.js");
 
 
 
 
 
 
-/* harmony default export */ __webpack_exports__["default"] = ([_level1__WEBPACK_IMPORTED_MODULE_0__["default"], _level2__WEBPACK_IMPORTED_MODULE_1__["default"], _level3__WEBPACK_IMPORTED_MODULE_2__["default"], _level4__WEBPACK_IMPORTED_MODULE_3__["default"], _level5__WEBPACK_IMPORTED_MODULE_4__["default"]]);
+
+/* harmony default export */ __webpack_exports__["default"] = ([_level1__WEBPACK_IMPORTED_MODULE_0__["default"], _level2__WEBPACK_IMPORTED_MODULE_1__["default"], _level3__WEBPACK_IMPORTED_MODULE_2__["default"], _level4__WEBPACK_IMPORTED_MODULE_3__["default"], _level5__WEBPACK_IMPORTED_MODULE_4__["default"], _level6__WEBPACK_IMPORTED_MODULE_5__["default"]]);
 
 /***/ }),
 
@@ -573,6 +576,106 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ([
   {
+    top: -150,
+    left: 250,
+    xVel: 0.17,
+    yVel: 0.30,
+    startTime: 1000
+  },
+  {
+    top: 500,
+    left: 250,
+    xVel: 0.17,
+    yVel: -0.30,
+    startTime: 2500
+  },
+  {
+    top: 500,
+    left: 550,
+    xVel: -0.17,
+    yVel: -0.30,
+    startTime: 4000
+  },
+  {
+    top: -150,
+    left: 550,
+    xVel: -0.17,
+    yVel: 0.30,
+    startTime: 5500 
+  },
+  {
+    top: -150,
+    left: 250,
+    xVel: 0.17,
+    yVel: 0.30,
+    startTime: 6800
+  },
+  {
+    top: 500,
+    left: 250,
+    xVel: 0.17,
+    yVel: -0.30,
+    startTime: 8100
+  },
+  {
+    top: 500,
+    left: 550,
+    xVel: -0.17,
+    yVel: -0.30,
+    startTime: 9400
+  },
+  {
+    top: -150,
+    left: 550,
+    xVel: -0.17,
+    yVel: 0.30,
+    startTime: 10700 
+  },
+  {
+    top: 200,
+    left: 150,
+    xVel: 0,
+    yVel: 0,
+    startTime: 12000,
+    angularVel: 0.15,
+    scaleTime: 3000,
+    growTo: 1.3 
+  },
+  {
+    top: 200,
+    left: 400,
+    xVel: 0,
+    yVel: 0,
+    startTime: 12000,
+    angularVel: 0.15,
+    scaleTime: 3000,
+    growTo: 1.3
+  },
+  {
+    top: 200,
+    left: 650,
+    xVel: 0,
+    yVel: 0,
+    startTime: 12000,
+    angularVel: 0.15,
+    scaleTime: 3000,
+    growTo: 1.3 
+  },
+]);
+
+/***/ }),
+
+/***/ "./src/levels/level5.js":
+/*!******************************!*\
+  !*** ./src/levels/level5.js ***!
+  \******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = ([
+  {
     top: 20,
     left: -120,
     xVel: 0.45,
@@ -661,22 +764,70 @@ __webpack_require__.r(__webpack_exports__);
     left: -100,
     xVel: 0.40,
     yVel: -0.25,
-    startTime: 14500
+    startTime: 13700
   },
   {
     top: 500,
     left: 900,
     xVel: -0.40,
     yVel: -0.25,
-    startTime: 14500
+    startTime: 13700
+  },
+  {
+    top: 100,
+    left: 120,
+    xVel: 0,
+    yVel: 0,
+    startTime: 15500,
+    angularVel: -0.18,
+    scaleTime: 2500,
+    growTo: 1.3 
+  },
+  {
+    top: 100,
+    left: 680,
+    xVel: 0,
+    yVel: 0,
+    startTime: 15500,
+    angularVel: 0.18,
+    scaleTime: 2500,
+    growTo: 1.15 
+  },
+  {
+    top: 300,
+    left: 120,
+    xVel: 0,
+    yVel: 0,
+    startTime: 15500,
+    angularVel: 0.18,
+    scaleTime: 2500,
+    growTo: 1.15 
+  },
+  {
+    top: 300,
+    left: 680,
+    xVel: 0,
+    yVel: 0,
+    startTime: 15500,
+    angularVel: -0.18,
+    scaleTime: 2500,
+    growTo: 1.15
+  },
+  {
+    top: 200,
+    left: 400,
+    xVel: 0,
+    yVel: 0,
+    startTime: 15500,
+    scaleTime: 2500,
   },
 ]);
 
 /***/ }),
 
-/***/ "./src/levels/level5.js":
+/***/ "./src/levels/level6.js":
 /*!******************************!*\
-  !*** ./src/levels/level5.js ***!
+  !*** ./src/levels/level6.js ***!
   \******************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
@@ -754,8 +905,6 @@ __webpack_require__.r(__webpack_exports__);
     scaleTime: 3000
   },
 ]);
-
-// t = 0, scale = 0, t = scaleTime, scale = 1
 
 /***/ }),
 
