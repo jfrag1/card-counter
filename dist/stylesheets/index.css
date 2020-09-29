@@ -328,3 +328,23 @@ button:hover {
   width: 50px;
   height: 70px;
 }
+
+#links-index {
+  width: 170px;
+  height: 50px;
+  margin-left: 930px;
+  margin-top: 10px;
+  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+#links-index i {
+  color: white;
+}
+
+#links-index i:hover {
+  color: lightgray;
+  cursor: pointer;
+}
