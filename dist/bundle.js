@@ -86,6 +86,81 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./src/click_manager.js":
+/*!******************************!*\
+  !*** ./src/click_manager.js ***!
+  \******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _html_grabber__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./html_grabber */ "./src/html_grabber.js");
+
+
+class ClickManager {
+  constructor(game) {
+    this.startLevel = game.playSpecificLevel.bind(game);
+    this.getRelevantHtml();
+  }
+
+  getRelevantHtml() {
+    this.tutorialButton = this.getHtmlById("tutorial-button");
+    this.tutorialScreen = this.getHtmlById("tutorial");
+    this.closeTutorialButton = this.getHtmlById("exit-tutorial");
+    this.levelButtons = this.getHtmlById("level-index").element.children;
+    this.gameMenu = this.getHtmlById("menu-content");
+  }
+
+  getHtmlById(id) {
+    return new _html_grabber__WEBPACK_IMPORTED_MODULE_0__["default"](id);
+  }
+
+  installAllClickListeners() {
+    this.tutorialButton.addClickListener(
+      this.renderTutorialScreen.bind(this) );
+
+    this.closeTutorialButton.addClickListener(
+      this.hideTutorialScreen.bind(this) );
+
+    this.installLevelButtonListeners();
+  }
+
+  renderTutorialScreen() {
+    this.tutorialButton.setDisplay("none");
+    this.tutorialScreen.addClass("active");
+  }
+
+  hideTutorialScreen() {
+    this.tutorialScreen.removeClass("active");
+    this.tutorialButton.setDisplay("block");
+  }
+
+  installLevelButtonListeners() {
+    for (let i = 0; i < this.levelButtons.length; i++)
+      this.installSingleLevelButtonListener(i + 1);
+  }
+
+  installSingleLevelButtonListener(level) {
+    this.levelButtons[level - 1].addEventListener("click",
+      this.hideMenuAndStartLevel.bind(this, level)
+    );
+  }
+
+  hideMenuAndStartLevel(level) {
+    this.startLevel(level);
+    this.hideMenu();
+  }
+
+  hideMenu() {
+    this.gameMenu.removeClass("active");
+  }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (ClickManager);
+
+/***/ }),
+
 /***/ "./src/game.js":
 /*!*********************!*\
   !*** ./src/game.js ***!
@@ -119,15 +194,23 @@ class Game {
   // options takes keys top, left, xVel, yVel, startTime, optionally angularVel, scaleTime
   renderCard(options) {
     setTimeout(() => {
+      // cardId keeps track of how many cards have been rendered - move to class having to do with rendering cards
       this.cardId += 1;
+      // belongs to lower level class
       const num = Object(_randomness_util__WEBPACK_IMPORTED_MODULE_0__["randomNum"])();
+
+      // make into method (this.changeCount(card))
       this.count += this.hilo_val(num);
+
+      // constructor of card class
       const card = Object(_randomness_util__WEBPACK_IMPORTED_MODULE_0__["buildCard"])(num, this.cardId);
   
       card.style.top = `${options.top}px`;
       card.style.left = `${options.left}px`;
 
       if (options.scaleTime) card.style.display = "none";
+
+      // maybe make board class
       document.getElementById("game-board").appendChild(card);
       
       let start;
@@ -337,6 +420,41 @@ class Game {
 
 /***/ }),
 
+/***/ "./src/html_grabber.js":
+/*!*****************************!*\
+  !*** ./src/html_grabber.js ***!
+  \*****************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+class HtmlGrabber {
+  constructor(id) {
+    this.element = document.getElementById(id);
+  }
+
+  addClickListener(callback) {
+    this.element.addEventListener("click", callback);
+  }
+
+  addClass(className) {
+    this.element.classList.add(className);
+  }
+
+  removeClass(className) {
+    this.element.classList.remove(className);
+  }
+
+  setDisplay(displayType) {
+    this.element.style.display = displayType;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (HtmlGrabber);
+
+/***/ }),
+
 /***/ "./src/index.js":
 /*!**********************!*\
   !*** ./src/index.js ***!
@@ -348,47 +466,15 @@ class Game {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game */ "./src/game.js");
 /* harmony import */ var _levels_all_levels__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./levels/all_levels */ "./src/levels/all_levels.js");
+/* harmony import */ var _click_manager__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./click_manager */ "./src/click_manager.js");
+
 
 
 
 document.addEventListener("DOMContentLoaded", () => {
   const game = new _game__WEBPACK_IMPORTED_MODULE_0__["default"](_levels_all_levels__WEBPACK_IMPORTED_MODULE_1__["default"]);
-  installEventListeners(game);
-
-  const menu = document.getElementById("menu-content");
-  menu.classList.add("active");
-
+  new _click_manager__WEBPACK_IMPORTED_MODULE_2__["default"](game).installAllClickListeners();
 });
-
-function installEventListeners(game) {
-  const showTutorial = document.getElementById("tutorial-button");
-
-  showTutorial.addEventListener("click", () => {
-    showTutorial.style.display = "none";
-
-    const tutorial = document.getElementById("tutorial");
-    tutorial.classList.add("active");
-  });
-
-  const redX = document.getElementById("exit-tutorial");
-  
-  redX.addEventListener("click", () => {
-    const tutorial = document.getElementById("tutorial");
-    tutorial.classList.remove("active");
-
-    const tutorialButton = document.getElementById("tutorial-button");
-    tutorialButton.style.display = "block";
-  });
-
-  const levelIndex = document.getElementById("level-index");
-  for (let i = 0; i < levelIndex.children.length; i++) {
-    levelIndex.children[i].addEventListener("click", () => {
-      game.playSpecificLevel(i + 1);
-      const menu = document.getElementById("menu-content");
-      menu.classList.remove("active");
-    });
-  }
-}
 
 /***/ }),
 

@@ -21,15 +21,23 @@ class Game {
   // options takes keys top, left, xVel, yVel, startTime, optionally angularVel, scaleTime
   renderCard(options) {
     setTimeout(() => {
+      // cardId keeps track of how many cards have been rendered - move to class having to do with rendering cards
       this.cardId += 1;
+      // belongs to lower level class
       const num = randomNum();
+
+      // make into method (this.changeCount(card))
       this.count += this.hilo_val(num);
+
+      // constructor of card class
       const card = buildCard(num, this.cardId);
   
       card.style.top = `${options.top}px`;
       card.style.left = `${options.left}px`;
 
       if (options.scaleTime) card.style.display = "none";
+
+      // maybe make board class
       document.getElementById("game-board").appendChild(card);
       
       let start;
