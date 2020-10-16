@@ -30,6 +30,10 @@ class HtmlGrabber {
   setTextToZero() {
     this.element.innerText = 0;
   }
+
+  setInnerHtml(elements) {
+    this.element.innerHTML = elements;
+  }
 }
 
 export default HtmlGrabber;

@@ -3,7 +3,7 @@ import HtmlGrabber from './html_grabber';
 class ClickManager {
   constructor(game) {
     this.startLevel = game.playSpecificLevel.bind(game);
-    this.submitGuess = game.handleSubmit.bind(game);
+    this.submitGuess = game.submitGuess.bind(game);
     this.getRelevantHtml();
   }
 

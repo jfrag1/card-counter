@@ -101,7 +101,7 @@ __webpack_require__.r(__webpack_exports__);
 class ClickManager {
   constructor(game) {
     this.startLevel = game.playSpecificLevel.bind(game);
-    this.submitGuess = game.handleSubmit.bind(game);
+    this.submitGuess = game.submitGuess.bind(game);
     this.getRelevantHtml();
   }
 
@@ -191,7 +191,24 @@ class ClickManager {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _randomness_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./randomness_util */ "./src/randomness_util.js");
+/* harmony import */ var _modal_manager__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modal_manager */ "./src/modal_manager.js");
 
+
+/*
+  other duties
+    * know current level
+    * store levels
+  game flow 
+    1. choose level - handled by click manager
+    2. trigger level text animation - make details into its own class
+    3. set timeout to render each card of the level 
+      -change this => use level to make card objects all at once - know the count immediately,
+        then set timeouts for each card object
+    4. keep track of the count for each card that is rendered - pass game instance down to card class
+    5. keep track of how many cards have been rendered - know when level ends
+    6. trigger modal rendering - check correctness of guess
+    7. trigger post-guess modal rendering - defer details to modal manager class
+*/
 
 class Game {
   constructor(levels) {
@@ -199,16 +216,15 @@ class Game {
     this.cardId = 0;
     this.currentLevel = 1;
     this.levels = levels;
+    this.modalManager = new _modal_manager__WEBPACK_IMPORTED_MODULE_1__["default"](this);
     
     // declutter constructor
     this.renderCard = this.renderCard.bind(this);
     this.renderModal = this.renderModal.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.hideModal = this.hideModal.bind(this);
+    this.submitGuess = this.submitGuess.bind(this);
     this.playLevel = this.playLevel.bind(this);
     this.tryLevelAgain = this.tryLevelAgain.bind(this);
     this.nextLevel = this.nextLevel.bind(this);
-    this.backToMenu = this.backToMenu.bind(this);
     this.levelTextAnimation = this.levelTextAnimation.bind(this);
   }
 
@@ -289,77 +305,56 @@ class Game {
     }, options.startTime);
   }
 
-  // move to board class
+  // move to board/card class
   inBounds(xPos, yPos) {
     return xPos >= -150 && xPos <= 1000 && yPos >= -200 && yPos <= 550;
   }
 
   renderModal() {
-    const modal = document.getElementById("modal-screen");
-    modal.classList.add("active");
-
-    // violates single responsibility principle renderModal is also resetting cardId
-    this.cardId = 0;
-
+    this.modalManager.renderGuessModal();
   }
 
-  // long
-  handleSubmit() {
-    const guessEl = document.getElementById("modal-guess");
-
-    // need better name
-    const content = document.getElementById("post-guess-modal");
-    
-    if (this.count === parseInt(guessEl.innerText)) {
-      if (this.currentLevel === this.levels.length) {
-        content.innerHTML = `<p>Correct! You win!</p><button id="back-to-menu">Back to menu</button>`
-      } else {
-        content.innerHTML = `<p>Correct!</p><button id="next-level">Next level</button><button id="back-to-menu">Back to menu</button>`
-
-        // rename
-        const nLevel = document.getElementById("next-level");
-        nLevel.addEventListener("click", this.nextLevel);
-      }
+  submitGuess() {
+    if (this.guessIsCorrect()) {
+      this.renderVictoryModal();
     } else {
-      content.innerHTML = `<p>Incorrect. The count was ${this.count}.</p><button id="try-again">Try again</button><button id="back-to-menu">Back to menu</button>`;
-      const tryAgain = document.getElementById("try-again");
-      tryAgain.addEventListener("click", this.tryLevelAgain);
+      this.modalManager.renderLevelLoss(this.count);
     }
-    const menuButton = document.getElementById("back-to-menu");
-    menuButton.addEventListener("click", this.backToMenu);
+    this.resetGameState();
+  }
 
-    guessEl.innerText = 0;
+  guessIsCorrect() {
+    const countGuess = document.getElementById("modal-guess");
+    return (this.count === parseInt(countGuess.innerText));
+  }
+
+  renderVictoryModal() {
+    if (this.isFinalLevel()) {
+      this.modalManager.renderFinalLevelWin();
+    } else {
+      this.modalManager.renderLevelWin();
+    }
+  }
+
+  isFinalLevel() {
+    return (this.currentLevel === this.levels.length);
+  }
+
+  resetGameState() {
+    const countGuess = document.getElementById("modal-guess");
+    countGuess.innerText = 0;
     this.count = 0;
-    content.classList.add("active");
-  }
-
-  hideModal() {
-    const tryAgain = document.getElementById("try-again");
-    if (tryAgain) {
-      tryAgain.removeEventListener("click", this.hideModal);
-    }
-
-    const modal = document.getElementById("modal-screen");
-    const content = document.getElementById("post-guess-modal");
-    content.classList.remove("active");
-    modal.classList.remove("active");
-  }
-
-  backToMenu() {
-    this.currentLevel = 1;
-    this.hideModal();
-    const menu = document.getElementById("menu-content");
-    menu.classList.add("active");
+    this.cardId = 0;
   }
 
   tryLevelAgain() {
-    this.hideModal();
+    this.modalManager.hideModal();
     this.playLevel();
   }
 
   nextLevel() {
     this.currentLevel += 1;
-    this.hideModal();
+    this.modalManager.hideModal();
     this.playLevel();
   }
 
@@ -459,6 +454,10 @@ class HtmlGrabber {
 
   setTextToZero() {
     this.element.innerText = 0;
+  }
+
+  setInnerHtml(elements) {
+    this.element.innerHTML = elements;
   }
 }
 
@@ -1105,6 +1104,95 @@ __webpack_require__.r(__webpack_exports__);
     startTime: 20600
   },
 ]);
+
+/***/ }),
+
+/***/ "./src/modal_manager.js":
+/*!******************************!*\
+  !*** ./src/modal_manager.js ***!
+  \******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _html_grabber__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./html_grabber */ "./src/html_grabber.js");
+
+
+class ModalManager {
+  constructor(game) {
+    this.playNextLevel = game.nextLevel.bind(game);
+    this.tryLevelAgain = game.tryLevelAgain.bind(game);
+    this.getRelevantHtml();
+  }
+
+  getRelevantHtml() {
+    this.guessModal = this.getHtmlById('modal-screen');
+    this.postGuessModal = this.getHtmlById('post-guess-modal');
+    this.menu = this.getHtmlById('menu-content');
+  }
+
+  getHtmlById(id) {
+    return new _html_grabber__WEBPACK_IMPORTED_MODULE_0__["default"](id);
+  }
+
+  renderGuessModal() {
+    this.guessModal.addClass("active");
+  }
+
+  renderFinalLevelWin() {
+    this.postGuessModal.setInnerHtml(
+      '<p>Correct! You win!</p><button id="back-to-menu">Back to menu</button>'
+    );
+    this.installMenuButtonListener();
+    this.postGuessModal.addClass('active');
+  }
+
+  installMenuButtonListener() {
+    const menuButton = document.getElementById('back-to-menu');
+    menuButton.addEventListener("click", this.goBackToMenu.bind(this));
+  }
+
+  goBackToMenu() {
+    this.hideModal();
+    this.menu.addClass('active');
+  }
+
+  hideModal() {
+    this.guessModal.removeClass('active');
+    this.postGuessModal.removeClass('active');
+  }
+
+  renderLevelWin() {
+    this.postGuessModal.setInnerHtml(
+      '<p>Correct!</p><button id="next-level">Next level</button><button id="back-to-menu">Back to menu</button>'
+    );
+    this.installMenuButtonListener();
+    this.installNextLevelListener();
+    this.postGuessModal.addClass('active');
+  }
+
+  installNextLevelListener() {
+    const nextLevelButton = this.getHtmlById('next-level');
+    nextLevelButton.addClickListener(this.playNextLevel.bind(this));
+  }
+
+  renderLevelLoss(actualCount) {
+    this.postGuessModal.setInnerHtml(
+      `<p>Incorrect. The count was ${actualCount}.</p><button id="try-again">Try again</button><button id="back-to-menu">Back to menu</button>`
+    );
+    this.installMenuButtonListener();
+    this.installTryLevelAgainListener();
+    this.postGuessModal.addClass('active');
+  }
+
+  installTryLevelAgainListener() {
+    const tryAgainButton = this.getHtmlById("try-again");
+    tryAgainButton.addClickListener(this.tryLevelAgain.bind(this));
+  }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (ModalManager);
 
 /***/ }),
 
