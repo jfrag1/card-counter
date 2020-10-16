@@ -115,11 +115,11 @@ header {
   font-size: 20px;
 }
 
-#modal-content-alt {
+#post-guess-modal {
   display: none;
 }
 
-#modal-content-alt.active {
+#post-guess-modal.active {
   position: absolute;
   display: flex;
   flex-direction: column;
@@ -135,7 +135,7 @@ header {
   z-index: 3;
 }
 
-#modal-content-alt p {
+#post-guess-modal p {
   margin-bottom: 10px;
 }
 

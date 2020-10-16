@@ -1,4 +1,20 @@
 import { randomNum, buildCard } from './randomness_util';
+import ModalManager from './modal_manager';
+/*
+  other duties
+    * know current level
+    * store levels
+  game flow 
+    1. choose level - handled by click manager
+    2. trigger level text animation - make details into its own class
+    3. set timeout to render each card of the level 
+      -change this => use level to make card objects all at once - know the count immediately,
+        then set timeouts for each card object
+    4. keep track of the count for each card that is rendered - pass game instance down to card class
+    5. keep track of how many cards have been rendered - know when level ends
+    6. trigger modal rendering - check correctness of guess
+    7. trigger post-guess modal rendering - defer details to modal manager class
+*/
 
 class Game {
   constructor(levels) {
@@ -6,15 +22,15 @@ class Game {
     this.cardId = 0;
     this.currentLevel = 1;
     this.levels = levels;
+    this.modalManager = new ModalManager(this);
     
+    // declutter constructor
     this.renderCard = this.renderCard.bind(this);
     this.renderModal = this.renderModal.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.hideModal = this.hideModal.bind(this);
+    this.submitGuess = this.submitGuess.bind(this);
     this.playLevel = this.playLevel.bind(this);
     this.tryLevelAgain = this.tryLevelAgain.bind(this);
     this.nextLevel = this.nextLevel.bind(this);
-    this.backToMenu = this.backToMenu.bind(this);
     this.levelTextAnimation = this.levelTextAnimation.bind(this);
   }
 
@@ -95,99 +111,56 @@ class Game {
     }, options.startTime);
   }
 
+  // move to board/card class
   inBounds(xPos, yPos) {
     return xPos >= -150 && xPos <= 1000 && yPos >= -200 && yPos <= 550;
   }
 
   renderModal() {
-    const modal = document.getElementById("modal-screen");
-    modal.classList.add("active");
-
-    this.cardId = 0;
-
-    const minus = document.getElementById("minus");
-    const plus = document.getElementById("plus");
-    const btn = document.getElementById("submit");
-
-
-    minus.addEventListener("click", this.decrementGuessVal);
-
-    plus.addEventListener("click", this.incrementGuessVal);
-
-    btn.addEventListener("click", this.handleSubmit);
+    this.modalManager.renderGuessModal();
   }
 
-  incrementGuessVal() {
-    const guessEl = document.getElementById("modal-guess");
-    guessEl.innerText = parseInt(guessEl.innerHTML) + 1;
-  }
-
-  decrementGuessVal() {
-    const guessEl = document.getElementById("modal-guess");
-    guessEl.innerText = parseInt(guessEl.innerHTML) - 1;
-  }
-
-
-  handleSubmit() {
-    const guessEl = document.getElementById("modal-guess");
-    const minus = document.getElementById("minus");
-    const plus = document.getElementById("plus");
-    const btn = document.getElementById("submit");
-
-    
-    minus.removeEventListener("click", this.decrementGuessVal);
-    plus.removeEventListener("click", this.incrementGuessVal);
-    btn.removeEventListener("click", this.handleSubmit);
-
-    const content = document.getElementById("modal-content-alt");
-    if (this.count === parseInt(guessEl.innerText)) {
-      if (this.currentLevel === this.levels.length) {
-        content.innerHTML = `<p>Correct! You win!</p><button id="back-to-menu">Back to menu</button>`
-      } else {
-        content.innerHTML = `<p>Correct!</p><button id="next-level">Next level</button><button id="back-to-menu">Back to menu</button>`
-        const nLevel = document.getElementById("next-level");
-        nLevel.addEventListener("click", this.nextLevel);
-      }
+  submitGuess() {
+    if (this.guessIsCorrect()) {
+      this.renderVictoryModal();
     } else {
-      content.innerHTML = `<p>Incorrect. The count was ${this.count}.</p><button id="try-again">Try again</button><button id="back-to-menu">Back to menu</button>`;
-      const tryAgain = document.getElementById("try-again");
-      tryAgain.addEventListener("click", this.tryLevelAgain);
+      this.modalManager.renderLevelLoss(this.count);
     }
-    const menuButton = document.getElementById("back-to-menu");
-    menuButton.addEventListener("click", this.backToMenu);
+    this.resetGameState();
+  }
 
-    guessEl.innerText = 0;
+  guessIsCorrect() {
+    const countGuess = document.getElementById("modal-guess");
+    return (this.count === parseInt(countGuess.innerText));
+  }
+
+  renderVictoryModal() {
+    if (this.isFinalLevel()) {
+      this.modalManager.renderFinalLevelWin();
+    } else {
+      this.modalManager.renderLevelWin();
+    }
+  }
+
+  isFinalLevel() {
+    return (this.currentLevel === this.levels.length);
+  }
+
+  resetGameState() {
+    const countGuess = document.getElementById("modal-guess");
+    countGuess.innerText = 0;
     this.count = 0;
-    content.classList.add("active");
-  }
-
-  hideModal() {
-    const tryAgain = document.getElementById("try-again");
-    if (tryAgain) {
-      tryAgain.removeEventListener("click", this.hideModal);
-    }
-
-    const modal = document.getElementById("modal-screen");
-    const content = document.getElementById("modal-content-alt");
-    content.classList.remove("active");
-    modal.classList.remove("active");
-  }
-
-  backToMenu() {
-    this.currentLevel = 1;
-    this.hideModal();
-    const menu = document.getElementById("menu-content");
-    menu.classList.add("active");
+    this.cardId = 0;
   }
 
   tryLevelAgain() {
-    this.hideModal();
+    this.modalManager.hideModal();
     this.playLevel();
   }
 
   nextLevel() {
     this.currentLevel += 1;
-    this.hideModal();
+    this.modalManager.hideModal();
     this.playLevel();
   }
 
