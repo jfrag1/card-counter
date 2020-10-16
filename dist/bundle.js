@@ -86,6 +86,101 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./src/click_manager.js":
+/*!******************************!*\
+  !*** ./src/click_manager.js ***!
+  \******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _html_grabber__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./html_grabber */ "./src/html_grabber.js");
+
+
+class ClickManager {
+  constructor(game) {
+    this.startLevel = game.playSpecificLevel.bind(game);
+    this.submitGuess = game.submitGuess.bind(game);
+    this.getRelevantHtml();
+  }
+
+  getRelevantHtml() {
+    this.tutorialButton = this.getHtmlById("tutorial-button");
+    this.tutorialScreen = this.getHtmlById("tutorial");
+    this.closeTutorialButton = this.getHtmlById("exit-tutorial");
+    this.levelButtons = this.getHtmlById("level-index").element.children;
+    this.gameMenu = this.getHtmlById("menu-content");
+    this.countGuess = this.getHtmlById("modal-guess");
+    this.plusButton = this.getHtmlById("plus");
+    this.minusButton = this.getHtmlById("minus");
+    this.submitButton = this.getHtmlById("submit");
+  }
+
+  getHtmlById(id) {
+    return new _html_grabber__WEBPACK_IMPORTED_MODULE_0__["default"](id);
+  }
+
+  installAllClickListeners() {
+    this.tutorialButton.addClickListener(
+      this.renderTutorialScreen.bind(this) );
+
+    this.closeTutorialButton.addClickListener(
+      this.hideTutorialScreen.bind(this) );
+
+    this.installLevelButtonListeners();
+    this.installModalListeners();
+  }
+
+  renderTutorialScreen() {
+    this.tutorialButton.setDisplay("none");
+    this.tutorialScreen.addClass("active");
+  }
+
+  hideTutorialScreen() {
+    this.tutorialScreen.removeClass("active");
+    this.tutorialButton.setDisplay("block");
+  }
+
+  installLevelButtonListeners() {
+    for (let i = 0; i < this.levelButtons.length; i++)
+      this.installSingleLevelButtonListener(i + 1);
+  }
+
+  installSingleLevelButtonListener(level) {
+    this.levelButtons[level - 1].addEventListener("click",
+      this.hideMenuAndStartLevel.bind(this, level)
+    );
+  }
+
+  hideMenuAndStartLevel(level) {
+    this.startLevel(level);
+    this.hideMenu();
+  }
+
+  hideMenu() {
+    this.gameMenu.removeClass("active");
+  }
+
+  installModalListeners() {
+    this.plusButton.addClickListener(this.incrementGuess.bind(this));
+    this.minusButton.addClickListener(this.decrementGuess.bind(this));
+    this.submitButton.addClickListener(this.submitGuess.bind(this));
+  }
+
+  incrementGuess() {
+    this.countGuess.increment();
+  }
+
+  decrementGuess() {
+    this.countGuess.decrement();
+  }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (ClickManager);
+
+/***/ }),
+
 /***/ "./src/game.js":
 /*!*********************!*\
   !*** ./src/game.js ***!
@@ -96,7 +191,24 @@
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _randomness_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./randomness_util */ "./src/randomness_util.js");
+/* harmony import */ var _modal_manager__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modal_manager */ "./src/modal_manager.js");
 
+
+/*
+  other duties
+    * know current level
+    * store levels
+  game flow 
+    1. choose level - handled by click manager
+    2. trigger level text animation - make details into its own class
+    3. set timeout to render each card of the level 
+      -change this => use level to make card objects all at once - know the count immediately,
+        then set timeouts for each card object
+    4. keep track of the count for each card that is rendered - pass game instance down to card class
+    5. keep track of how many cards have been rendered - know when level ends
+    6. trigger modal rendering - check correctness of guess
+    7. trigger post-guess modal rendering - defer details to modal manager class
+*/
 
 class Game {
   constructor(levels) {
@@ -104,30 +216,38 @@ class Game {
     this.cardId = 0;
     this.currentLevel = 1;
     this.levels = levels;
+    this.modalManager = new _modal_manager__WEBPACK_IMPORTED_MODULE_1__["default"](this);
     
+    // declutter constructor
     this.renderCard = this.renderCard.bind(this);
     this.renderModal = this.renderModal.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.hideModal = this.hideModal.bind(this);
+    this.submitGuess = this.submitGuess.bind(this);
     this.playLevel = this.playLevel.bind(this);
     this.tryLevelAgain = this.tryLevelAgain.bind(this);
     this.nextLevel = this.nextLevel.bind(this);
-    this.backToMenu = this.backToMenu.bind(this);
     this.levelTextAnimation = this.levelTextAnimation.bind(this);
   }
 
   // options takes keys top, left, xVel, yVel, startTime, optionally angularVel, scaleTime
   renderCard(options) {
     setTimeout(() => {
+      // cardId keeps track of how many cards have been rendered - move to class having to do with rendering cards
       this.cardId += 1;
+      // belongs to lower level class
       const num = Object(_randomness_util__WEBPACK_IMPORTED_MODULE_0__["randomNum"])();
+
+      // make into method (this.changeCount(card))
       this.count += this.hilo_val(num);
+
+      // constructor of card class
       const card = Object(_randomness_util__WEBPACK_IMPORTED_MODULE_0__["buildCard"])(num, this.cardId);
   
       card.style.top = `${options.top}px`;
       card.style.left = `${options.left}px`;
 
       if (options.scaleTime) card.style.display = "none";
+
+      // maybe make board class
       document.getElementById("game-board").appendChild(card);
       
       let start;
@@ -185,99 +305,56 @@ class Game {
     }, options.startTime);
   }
 
+  // move to board/card class
   inBounds(xPos, yPos) {
     return xPos >= -150 && xPos <= 1000 && yPos >= -200 && yPos <= 550;
   }
 
   renderModal() {
-    const modal = document.getElementById("modal-screen");
-    modal.classList.add("active");
-
-    this.cardId = 0;
-
-    const minus = document.getElementById("minus");
-    const plus = document.getElementById("plus");
-    const btn = document.getElementById("submit");
-
-
-    minus.addEventListener("click", this.decrementGuessVal);
-
-    plus.addEventListener("click", this.incrementGuessVal);
-
-    btn.addEventListener("click", this.handleSubmit);
+    this.modalManager.renderGuessModal();
   }
 
-  incrementGuessVal() {
-    const guessEl = document.getElementById("modal-guess");
-    guessEl.innerText = parseInt(guessEl.innerHTML) + 1;
-  }
-
-  decrementGuessVal() {
-    const guessEl = document.getElementById("modal-guess");
-    guessEl.innerText = parseInt(guessEl.innerHTML) - 1;
-  }
-
-
-  handleSubmit() {
-    const guessEl = document.getElementById("modal-guess");
-    const minus = document.getElementById("minus");
-    const plus = document.getElementById("plus");
-    const btn = document.getElementById("submit");
-
-    
-    minus.removeEventListener("click", this.decrementGuessVal);
-    plus.removeEventListener("click", this.incrementGuessVal);
-    btn.removeEventListener("click", this.handleSubmit);
-
-    const content = document.getElementById("modal-content-alt");
-    if (this.count === parseInt(guessEl.innerText)) {
-      if (this.currentLevel === this.levels.length) {
-        content.innerHTML = `<p>Correct! You win!</p><button id="back-to-menu">Back to menu</button>`
-      } else {
-        content.innerHTML = `<p>Correct!</p><button id="next-level">Next level</button><button id="back-to-menu">Back to menu</button>`
-        const nLevel = document.getElementById("next-level");
-        nLevel.addEventListener("click", this.nextLevel);
-      }
+  submitGuess() {
+    if (this.guessIsCorrect()) {
+      this.renderVictoryModal();
     } else {
-      content.innerHTML = `<p>Incorrect. The count was ${this.count}.</p><button id="try-again">Try again</button><button id="back-to-menu">Back to menu</button>`;
-      const tryAgain = document.getElementById("try-again");
-      tryAgain.addEventListener("click", this.tryLevelAgain);
+      this.modalManager.renderLevelLoss(this.count);
     }
-    const menuButton = document.getElementById("back-to-menu");
-    menuButton.addEventListener("click", this.backToMenu);
+    this.resetGameState();
+  }
 
-    guessEl.innerText = 0;
+  guessIsCorrect() {
+    const countGuess = document.getElementById("modal-guess");
+    return (this.count === parseInt(countGuess.innerText));
+  }
+
+  renderVictoryModal() {
+    if (this.isFinalLevel()) {
+      this.modalManager.renderFinalLevelWin();
+    } else {
+      this.modalManager.renderLevelWin();
+    }
+  }
+
+  isFinalLevel() {
+    return (this.currentLevel === this.levels.length);
+  }
+
+  resetGameState() {
+    const countGuess = document.getElementById("modal-guess");
+    countGuess.innerText = 0;
     this.count = 0;
-    content.classList.add("active");
-  }
-
-  hideModal() {
-    const tryAgain = document.getElementById("try-again");
-    if (tryAgain) {
-      tryAgain.removeEventListener("click", this.hideModal);
-    }
-
-    const modal = document.getElementById("modal-screen");
-    const content = document.getElementById("modal-content-alt");
-    content.classList.remove("active");
-    modal.classList.remove("active");
-  }
-
-  backToMenu() {
-    this.currentLevel = 1;
-    this.hideModal();
-    const menu = document.getElementById("menu-content");
-    menu.classList.add("active");
+    this.cardId = 0;
   }
 
   tryLevelAgain() {
-    this.hideModal();
+    this.modalManager.hideModal();
     this.playLevel();
   }
 
   nextLevel() {
     this.currentLevel += 1;
-    this.hideModal();
+    this.modalManager.hideModal();
     this.playLevel();
   }
 
@@ -337,6 +414,57 @@ class Game {
 
 /***/ }),
 
+/***/ "./src/html_grabber.js":
+/*!*****************************!*\
+  !*** ./src/html_grabber.js ***!
+  \*****************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+class HtmlGrabber {
+  constructor(id) {
+    this.element = document.getElementById(id);
+  }
+
+  addClickListener(callback) {
+    this.element.addEventListener("click", callback);
+  }
+
+  addClass(className) {
+    this.element.classList.add(className);
+  }
+
+  removeClass(className) {
+    this.element.classList.remove(className);
+  }
+
+  setDisplay(displayType) {
+    this.element.style.display = displayType;
+  }
+
+  increment() {
+    this.element.innerText = parseInt(this.element.innerText) + 1;
+  }
+
+  decrement() {
+    this.element.innerText = parseInt(this.element.innerText) - 1;
+  }
+
+  setTextToZero() {
+    this.element.innerText = 0;
+  }
+
+  setInnerHtml(elements) {
+    this.element.innerHTML = elements;
+  }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (HtmlGrabber);
+
+/***/ }),
+
 /***/ "./src/index.js":
 /*!**********************!*\
   !*** ./src/index.js ***!
@@ -348,47 +476,15 @@ class Game {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _game__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./game */ "./src/game.js");
 /* harmony import */ var _levels_all_levels__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./levels/all_levels */ "./src/levels/all_levels.js");
+/* harmony import */ var _click_manager__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./click_manager */ "./src/click_manager.js");
+
 
 
 
 document.addEventListener("DOMContentLoaded", () => {
   const game = new _game__WEBPACK_IMPORTED_MODULE_0__["default"](_levels_all_levels__WEBPACK_IMPORTED_MODULE_1__["default"]);
-  installEventListeners(game);
-
-  const menu = document.getElementById("menu-content");
-  menu.classList.add("active");
-
+  new _click_manager__WEBPACK_IMPORTED_MODULE_2__["default"](game).installAllClickListeners();
 });
-
-function installEventListeners(game) {
-  const showTutorial = document.getElementById("tutorial-button");
-
-  showTutorial.addEventListener("click", () => {
-    showTutorial.style.display = "none";
-
-    const tutorial = document.getElementById("tutorial");
-    tutorial.classList.add("active");
-  });
-
-  const redX = document.getElementById("exit-tutorial");
-  
-  redX.addEventListener("click", () => {
-    const tutorial = document.getElementById("tutorial");
-    tutorial.classList.remove("active");
-
-    const tutorialButton = document.getElementById("tutorial-button");
-    tutorialButton.style.display = "block";
-  });
-
-  const levelIndex = document.getElementById("level-index");
-  for (let i = 0; i < levelIndex.children.length; i++) {
-    levelIndex.children[i].addEventListener("click", () => {
-      game.playSpecificLevel(i + 1);
-      const menu = document.getElementById("menu-content");
-      menu.classList.remove("active");
-    });
-  }
-}
 
 /***/ }),
 
@@ -1008,6 +1104,95 @@ __webpack_require__.r(__webpack_exports__);
     startTime: 20600
   },
 ]);
+
+/***/ }),
+
+/***/ "./src/modal_manager.js":
+/*!******************************!*\
+  !*** ./src/modal_manager.js ***!
+  \******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _html_grabber__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./html_grabber */ "./src/html_grabber.js");
+
+
+class ModalManager {
+  constructor(game) {
+    this.playNextLevel = game.nextLevel.bind(game);
+    this.tryLevelAgain = game.tryLevelAgain.bind(game);
+    this.getRelevantHtml();
+  }
+
+  getRelevantHtml() {
+    this.guessModal = this.getHtmlById('modal-screen');
+    this.postGuessModal = this.getHtmlById('post-guess-modal');
+    this.menu = this.getHtmlById('menu-content');
+  }
+
+  getHtmlById(id) {
+    return new _html_grabber__WEBPACK_IMPORTED_MODULE_0__["default"](id);
+  }
+
+  renderGuessModal() {
+    this.guessModal.addClass("active");
+  }
+
+  renderFinalLevelWin() {
+    this.postGuessModal.setInnerHtml(
+      '<p>Correct! You win!</p><button id="back-to-menu">Back to menu</button>'
+    );
+    this.installMenuButtonListener();
+    this.postGuessModal.addClass('active');
+  }
+
+  installMenuButtonListener() {
+    const menuButton = document.getElementById('back-to-menu');
+    menuButton.addEventListener("click", this.goBackToMenu.bind(this));
+  }
+
+  goBackToMenu() {
+    this.hideModal();
+    this.menu.addClass('active');
+  }
+
+  hideModal() {
+    this.guessModal.removeClass('active');
+    this.postGuessModal.removeClass('active');
+  }
+
+  renderLevelWin() {
+    this.postGuessModal.setInnerHtml(
+      '<p>Correct!</p><button id="next-level">Next level</button><button id="back-to-menu">Back to menu</button>'
+    );
+    this.installMenuButtonListener();
+    this.installNextLevelListener();
+    this.postGuessModal.addClass('active');
+  }
+
+  installNextLevelListener() {
+    const nextLevelButton = this.getHtmlById('next-level');
+    nextLevelButton.addClickListener(this.playNextLevel.bind(this));
+  }
+
+  renderLevelLoss(actualCount) {
+    this.postGuessModal.setInnerHtml(
+      `<p>Incorrect. The count was ${actualCount}.</p><button id="try-again">Try again</button><button id="back-to-menu">Back to menu</button>`
+    );
+    this.installMenuButtonListener();
+    this.installTryLevelAgainListener();
+    this.postGuessModal.addClass('active');
+  }
+
+  installTryLevelAgainListener() {
+    const tryAgainButton = this.getHtmlById("try-again");
+    tryAgainButton.addClickListener(this.tryLevelAgain.bind(this));
+  }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (ModalManager);
 
 /***/ }),
 
