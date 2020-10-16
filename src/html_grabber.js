@@ -18,6 +18,18 @@ class HtmlGrabber {
   setDisplay(displayType) {
     this.element.style.display = displayType;
   }
+
+  increment() {
+    this.element.innerText = parseInt(this.element.innerText) + 1;
+  }
+
+  decrement() {
+    this.element.innerText = parseInt(this.element.innerText) - 1;
+  }
+
+  setTextToZero() {
+    this.element.innerText = 0;
+  }
 }
 
 export default HtmlGrabber;

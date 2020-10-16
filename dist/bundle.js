@@ -101,6 +101,7 @@ __webpack_require__.r(__webpack_exports__);
 class ClickManager {
   constructor(game) {
     this.startLevel = game.playSpecificLevel.bind(game);
+    this.submitGuess = game.handleSubmit.bind(game);
     this.getRelevantHtml();
   }
 
@@ -110,6 +111,10 @@ class ClickManager {
     this.closeTutorialButton = this.getHtmlById("exit-tutorial");
     this.levelButtons = this.getHtmlById("level-index").element.children;
     this.gameMenu = this.getHtmlById("menu-content");
+    this.countGuess = this.getHtmlById("modal-guess");
+    this.plusButton = this.getHtmlById("plus");
+    this.minusButton = this.getHtmlById("minus");
+    this.submitButton = this.getHtmlById("submit");
   }
 
   getHtmlById(id) {
@@ -124,6 +129,7 @@ class ClickManager {
       this.hideTutorialScreen.bind(this) );
 
     this.installLevelButtonListeners();
+    this.installModalListeners();
   }
 
   renderTutorialScreen() {
@@ -155,6 +161,20 @@ class ClickManager {
   hideMenu() {
     this.gameMenu.removeClass("active");
   }
+
+  installModalListeners() {
+    this.plusButton.addClickListener(this.incrementGuess.bind(this));
+    this.minusButton.addClickListener(this.decrementGuess.bind(this));
+    this.submitButton.addClickListener(this.submitGuess.bind(this));
+  }
+
+  incrementGuess() {
+    this.countGuess.increment();
+  }
+
+  decrementGuess() {
+    this.countGuess.decrement();
+  }
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (ClickManager);
@@ -180,6 +200,7 @@ class Game {
     this.currentLevel = 1;
     this.levels = levels;
     
+    // declutter constructor
     this.renderCard = this.renderCard.bind(this);
     this.renderModal = this.renderModal.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -268,6 +289,7 @@ class Game {
     }, options.startTime);
   }
 
+  // move to board class
   inBounds(xPos, yPos) {
     return xPos >= -150 && xPos <= 1000 && yPos >= -200 && yPos <= 550;
   }
@@ -276,48 +298,25 @@ class Game {
     const modal = document.getElementById("modal-screen");
     modal.classList.add("active");
 
+    // violates single responsibility principle renderModal is also resetting cardId
     this.cardId = 0;
 
-    const minus = document.getElementById("minus");
-    const plus = document.getElementById("plus");
-    const btn = document.getElementById("submit");
-
-
-    minus.addEventListener("click", this.decrementGuessVal);
-
-    plus.addEventListener("click", this.incrementGuessVal);
-
-    btn.addEventListener("click", this.handleSubmit);
   }
 
-  incrementGuessVal() {
-    const guessEl = document.getElementById("modal-guess");
-    guessEl.innerText = parseInt(guessEl.innerHTML) + 1;
-  }
-
-  decrementGuessVal() {
-    const guessEl = document.getElementById("modal-guess");
-    guessEl.innerText = parseInt(guessEl.innerHTML) - 1;
-  }
-
-
+  // long
   handleSubmit() {
     const guessEl = document.getElementById("modal-guess");
-    const minus = document.getElementById("minus");
-    const plus = document.getElementById("plus");
-    const btn = document.getElementById("submit");
 
+    // need better name
+    const content = document.getElementById("post-guess-modal");
     
-    minus.removeEventListener("click", this.decrementGuessVal);
-    plus.removeEventListener("click", this.incrementGuessVal);
-    btn.removeEventListener("click", this.handleSubmit);
-
-    const content = document.getElementById("modal-content-alt");
     if (this.count === parseInt(guessEl.innerText)) {
       if (this.currentLevel === this.levels.length) {
         content.innerHTML = `<p>Correct! You win!</p><button id="back-to-menu">Back to menu</button>`
       } else {
         content.innerHTML = `<p>Correct!</p><button id="next-level">Next level</button><button id="back-to-menu">Back to menu</button>`
+
+        // rename
         const nLevel = document.getElementById("next-level");
         nLevel.addEventListener("click", this.nextLevel);
       }
@@ -341,7 +340,7 @@ class Game {
     }
 
     const modal = document.getElementById("modal-screen");
-    const content = document.getElementById("modal-content-alt");
+    const content = document.getElementById("post-guess-modal");
     content.classList.remove("active");
     modal.classList.remove("active");
   }
@@ -448,6 +447,18 @@ class HtmlGrabber {
 
   setDisplay(displayType) {
     this.element.style.display = displayType;
+  }
+
+  increment() {
+    this.element.innerText = parseInt(this.element.innerText) + 1;
+  }
+
+  decrement() {
+    this.element.innerText = parseInt(this.element.innerText) - 1;
+  }
+
+  setTextToZero() {
+    this.element.innerText = 0;
   }
 }
 

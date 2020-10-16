@@ -3,6 +3,7 @@ import HtmlGrabber from './html_grabber';
 class ClickManager {
   constructor(game) {
     this.startLevel = game.playSpecificLevel.bind(game);
+    this.submitGuess = game.handleSubmit.bind(game);
     this.getRelevantHtml();
   }
 
@@ -12,6 +13,10 @@ class ClickManager {
     this.closeTutorialButton = this.getHtmlById("exit-tutorial");
     this.levelButtons = this.getHtmlById("level-index").element.children;
     this.gameMenu = this.getHtmlById("menu-content");
+    this.countGuess = this.getHtmlById("modal-guess");
+    this.plusButton = this.getHtmlById("plus");
+    this.minusButton = this.getHtmlById("minus");
+    this.submitButton = this.getHtmlById("submit");
   }
 
   getHtmlById(id) {
@@ -26,6 +31,7 @@ class ClickManager {
       this.hideTutorialScreen.bind(this) );
 
     this.installLevelButtonListeners();
+    this.installModalListeners();
   }
 
   renderTutorialScreen() {
@@ -56,6 +62,20 @@ class ClickManager {
 
   hideMenu() {
     this.gameMenu.removeClass("active");
+  }
+
+  installModalListeners() {
+    this.plusButton.addClickListener(this.incrementGuess.bind(this));
+    this.minusButton.addClickListener(this.decrementGuess.bind(this));
+    this.submitButton.addClickListener(this.submitGuess.bind(this));
+  }
+
+  incrementGuess() {
+    this.countGuess.increment();
+  }
+
+  decrementGuess() {
+    this.countGuess.decrement();
   }
 }
 
