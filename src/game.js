@@ -1,5 +1,6 @@
-import { randomNum, buildCard } from './randomness_util';
+// import { randomNum, buildCard } from './randomness_util';
 import ModalManager from './modal_manager';
+import Card from './card';
 /*
   other duties
     * know current level
@@ -24,99 +25,53 @@ class Game {
     this.levels = levels;
     this.modalManager = new ModalManager(this);
     
-    // declutter constructor
-    this.renderCard = this.renderCard.bind(this);
-    this.renderModal = this.renderModal.bind(this);
-    this.submitGuess = this.submitGuess.bind(this);
-    this.playLevel = this.playLevel.bind(this);
-    this.tryLevelAgain = this.tryLevelAgain.bind(this);
-    this.nextLevel = this.nextLevel.bind(this);
     this.levelTextAnimation = this.levelTextAnimation.bind(this);
   }
 
-  // options takes keys top, left, xVel, yVel, startTime, optionally angularVel, scaleTime
-  renderCard(options) {
-    setTimeout(() => {
-      // cardId keeps track of how many cards have been rendered - move to class having to do with rendering cards
-      this.cardId += 1;
-      // belongs to lower level class
-      const num = randomNum();
+  playLevel() {
+    setTimeout(() => this.levelTextAnimation(), 1000);
+    setTimeout(this.renderAllCards.bind(this), 4000);
+  }
 
-      // make into method (this.changeCount(card))
-      this.count += this.hilo_val(num);
+  levelTextAnimation() {
+    const levelText = document.createElement("div");
+    levelText.setAttribute("class", "level-text");
+    levelText.innerText = `Level ${this.currentLevel}`;
+    document.getElementById("game-board").appendChild(levelText);
 
-      // constructor of card class
-      const card = buildCard(num, this.cardId);
-  
-      card.style.top = `${options.top}px`;
-      card.style.left = `${options.left}px`;
+    let start;
 
-      if (options.scaleTime) card.style.display = "none";
-
-      // maybe make board class
-      document.getElementById("game-board").appendChild(card);
-      
-      let start;
-      const that = this;
-      
-      function step(timestamp) {
-        if (start === undefined)
+    function step(timestamp) {
+      if (start === undefined)
         start = timestamp;
-        const elapsed = timestamp - start;
-        const xTrans = options.xVel * elapsed;
-        const yTrans = options.yVel * elapsed;
-        
-        let transString = 'translateX(' + (xTrans) + 'px) translateY(' + (yTrans) + 'px)';
-        if (options.angularVel) {
-          transString +=' rotate(' + (options.angularVel * elapsed) + 'deg)';
-        }
+      const elapsed = timestamp - start;
+      const secsElapsed = elapsed / 1000;
 
-        
-        if (options.scaleTime) {
-          let factor
-          const scaleTo = options.growTo ? options.growTo : 1;
-          if (options.scaleTime < elapsed) {
-            factor = (2 - elapsed / options.scaleTime) * scaleTo;
-          } else {
-            factor = (elapsed / options.scaleTime) * scaleTo;
-          }
-          transString += "scale(" + factor + ", " + factor + ")";
-          
-          if (elapsed > 100) {
-            card.style.display = "block";
-          }
+      const pos = -21 + 1106 * secsElapsed - 674.3 * secsElapsed ** 2 + 146.66 * secsElapsed ** 3;
+      const slant = (1106 - 1349 * secsElapsed + 440 * secsElapsed ** 2) / 20;
 
-          if (elapsed > 2 * options.scaleTime) {
-            if (parseInt(card.id) === that.levels[that.currentLevel - 1].length) {
-              setTimeout(that.renderModal, 800);
-            }
-            card.remove();
-            return;
-          }
-        }
-    
-        card.style.transform = transString;
-    
-        if (that.inBounds(options.left + xTrans, options.top + yTrans)) {
-          window.requestAnimationFrame(step);
-        } else {
-          if (parseInt(card.id) === that.levels[that.currentLevel - 1].length) {
-            setTimeout(that.renderModal, 800);
-          }
-          card.remove();
-        }
+      levelText.style.transform = 'translateX(' + pos + 'px) skewX(' + slant + 'deg)';
+
+      if (elapsed < 3300) {
+        window.requestAnimationFrame(step);
+      } else {
+        levelText.remove();
       }
-    
-      card.onload = () => window.requestAnimationFrame(step);
-    }, options.startTime);
+    }
+
+    window.requestAnimationFrame(step);
   }
 
-  // move to board/card class
-  inBounds(xPos, yPos) {
-    return xPos >= -150 && xPos <= 1000 && yPos >= -200 && yPos <= 550;
+  renderAllCards() {
+    this.levels[this.currentLevel - 1].forEach(cardEffects => {
+      this.cardId += 1;
+      const card = new Card(cardEffects, this);
+      this.count += card.hiLoIndexValue;
+      card.setRenderTimer();
+    })
   }
 
-  renderModal() {
+  endLevel() {
     this.modalManager.renderGuessModal();
   }
 
@@ -164,56 +119,11 @@ class Game {
     this.playLevel();
   }
 
-  playLevel() {
-    setTimeout(() => this.levelTextAnimation(), 1000);
-    setTimeout(() => this.levels[this.currentLevel - 1].forEach(card => {
-      this.renderCard(card);
-    }), 4000);
-  }
-
   playSpecificLevel(level) {
     this.currentLevel = level;
     this.playLevel();
   }
 
-  levelTextAnimation() {
-    const levelText = document.createElement("div");
-    levelText.setAttribute("class", "level-text");
-    levelText.innerText = `Level ${this.currentLevel}`;
-    document.getElementById("game-board").appendChild(levelText);
-
-    let start;
-
-    function step(timestamp) {
-      if (start === undefined)
-        start = timestamp;
-      const elapsed = timestamp - start;
-      const secsElapsed = elapsed / 1000;
-
-      const pos = -21 + 1106 * secsElapsed - 674.3 * secsElapsed ** 2 + 146.66 * secsElapsed ** 3;
-      const slant = (1106 - 1349 * secsElapsed + 440 * secsElapsed ** 2) / 20;
-
-      levelText.style.transform = 'translateX(' + pos + 'px) skewX(' + slant + 'deg)';
-
-      if (elapsed < 3300) {
-        window.requestAnimationFrame(step);
-      } else {
-        levelText.remove();
-      }
-    }
-
-    window.requestAnimationFrame(step);
-  }
-
-  hilo_val(num) {
-    if (num >= 2 && num <= 6) {
-      return 1;
-    } else if (num >= 7 && num <= 9) {
-      return 0;
-    } else {
-      return -1;
-    }
-  }
 }
 
 export default Game;
