@@ -55,7 +55,12 @@ class ModalManager {
 
   installNextLevelListener() {
     const nextLevelButton = this.getHtmlById('next-level');
-    nextLevelButton.addClickListener(this.playNextLevel.bind(this));
+    nextLevelButton.addClickListener(this.hideModalAndStartNextLevel.bind(this));
+  }
+
+  hideModalAndStartNextLevel() {
+    this.hideModal();
+    this.playNextLevel();
   }
 
   renderLevelLoss(actualCount) {
@@ -69,7 +74,12 @@ class ModalManager {
 
   installTryLevelAgainListener() {
     const tryAgainButton = this.getHtmlById("try-again");
-    tryAgainButton.addClickListener(this.tryLevelAgain.bind(this));
+    tryAgainButton.addClickListener(this.hideModalAndTryAgain.bind(this));
+  }
+
+  hideModalAndTryAgain() {
+    this.hideModal();
+    this.tryLevelAgain();
   }
 }
 

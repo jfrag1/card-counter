@@ -86,6 +86,209 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./src/card.js":
+/*!*********************!*\
+  !*** ./src/card.js ***!
+  \*********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+class Card {
+  constructor(animationEffects, game) {
+    this.id = game.cardId;
+    this.isFinalCard = (this.id === game.levels[game.currentLevel - 1].length);
+    this.endLevel = game.endLevel.bind(game);
+    this.setRandomSuitAndValue();
+    this.buildCardHtmlElement();
+    this.setHiLoIndexValue();
+    this.setStartingPos(animationEffects.left, animationEffects.top);
+    this.saveAnimationEffects(animationEffects);
+  }
+
+  setRandomSuitAndValue() {
+    this.cardValue = this.generateRandomCardValue();
+    this.suit = this.generateRandomSuit();
+  }
+
+  // cards are valued 1-13: Ace: 1, Jack: 11, Queen: 12, King: 13
+  generateRandomCardValue() {
+    return Math.floor((Math.random() * 13) + 1);
+  }
+
+  generateRandomSuit() {
+    const randomIndex = Math.floor(Math.random() * 4);
+    return ["HEART", "DIAMOND", "CLUB", "SPADE"][randomIndex];
+  }
+
+  buildCardHtmlElement() {
+    this.imageElement = document.createElement("img");
+    this.setElementAttributes();
+  }
+
+  setElementAttributes() {
+    const imageUrl = `./dist/card_imgs/${this.suit}-${this.cardValue}.svg`;
+    this.imageElement.setAttribute("src", imageUrl);
+    this.imageElement.setAttribute("class", "card");
+    this.imageElement.setAttribute("id", this.id);
+  }
+
+  setHiLoIndexValue() {
+    if (this.cardValue >= 2 && this.cardValue <= 6) {
+      this.hiLoIndexValue = 1;
+    } else if (this.cardValue >= 7 && this.cardValue <= 9) {
+      this.hiLoIndexValue = 0;
+    } else {
+      this.hiLoIndexValue = -1;
+    }
+  }
+
+  setStartingPos(xPos, yPos) {
+    xPos = xPos || 0;
+    yPos = yPos || 0;
+    this.imageElement.style.left = `${xPos}px`;
+    this.imageElement.style.top = `${yPos}px`;
+    this.startPosition = [xPos, yPos];
+  }
+
+  saveAnimationEffects(animationEffects) {
+    this.xVel = animationEffects.xVel || 0;
+    this.yVel = animationEffects.yVel || 0;
+    this.msUntilRender = animationEffects.msUntilRender || 0;
+    this.angularVel = animationEffects.angularVel;
+    this.msUntilFullGrowth = animationEffects.msUntilFullGrowth;
+    this.growTo = animationEffects.growTo || 1;
+  }
+
+  setRenderTimer() {
+    setTimeout(this.render.bind(this), this.msUntilRender);
+  }
+
+  render() {
+    this.hideIfGrowingCard();
+    this.insertCardToDOM();
+    this.initializeAnimation();
+  }
+
+  // must do this to prevent card from being rendered at full size in first frame
+  hideIfGrowingCard() {
+    if (this.isGrowingCard())
+      this.imageElement.style.display = "none";
+  }
+
+  isGrowingCard() {
+    return Boolean(this.msUntilFullGrowth);
+  }
+
+  insertCardToDOM() {
+    document.getElementById("game-board").appendChild(this.imageElement);
+  }
+
+  initializeAnimation() {
+    let start;
+    const that = this;
+    function step(timestamp) {
+      if (start === undefined)
+        start = timestamp;
+      else
+        that.imageElement.style.display = "block"; // make sure growing cards are visible after first animation frame
+      const msElapsed = timestamp - start;
+      if (that.isReadyForRemoval(msElapsed)) {
+        that.removeCardFromDOM();
+      } else {
+        that.setTransformation(msElapsed);
+        window.requestAnimationFrame(step);
+      }
+    }
+    window.requestAnimationFrame(step);
+  }
+
+  isReadyForRemoval(msElapsed) {
+    if (this.isGrowingCard()) {
+      if (this.isFullyShrunk(msElapsed)) return true;
+    }
+    return (this.isOutOfBounds(msElapsed));
+  }
+
+  isFullyShrunk(msElapsed) {
+    return (msElapsed > 2 * this.msUntilFullGrowth);
+  }
+
+  isOutOfBounds(msElapsed) {
+    const [xPos, yPos] = this.currentPos(msElapsed);
+    return !(xPos >= -150 && xPos <= 1000 && yPos >= -200 && yPos <= 550);
+  }
+  
+  currentPos(msElapsed) {
+    const xPos = this.startPosition[0] + (msElapsed * this.xVel);
+    const yPos = this.startPosition[1] + (msElapsed * this.yVel);
+    return [xPos, yPos];
+  } 
+
+  removeCardFromDOM() {
+    this.imageElement.remove();
+    if (this.isFinalCard)
+      setTimeout(this.endLevel.bind(this), 800);
+  }
+
+  setTransformation(msElapsed) {
+    this.imageElement.style.transform = this.calcTransformation(msElapsed);
+  }
+
+  calcTransformation(msElapsed) {
+    let transformation = this.getTranslations(msElapsed);
+    transformation += this.getAllOtherTransformations(msElapsed);
+    return transformation;
+  }
+
+  getTranslations(msElapsed) {
+    const xMove = msElapsed * this.xVel;
+    const yMove = msElapsed * this.yVel;
+    return `translateX(${xMove}px) translateY(${yMove}px)`;
+  }
+
+  getAllOtherTransformations(msElapsed) {
+    let otherTransformations = '';
+    otherTransformations += this.getRotation(msElapsed);
+    otherTransformations += this.getGrowthTransformation(msElapsed);
+    return otherTransformations;
+  }
+
+  getRotation(msElapsed) {
+    if (this.isSpinningCard()) {
+      return ` rotate(${this.angularVel * msElapsed}deg)`;
+    } else {
+      return '';
+    }
+  }
+
+  isSpinningCard() {
+    return Boolean(this.angularVel);
+  }
+
+  getGrowthTransformation(msElapsed) {
+    if (this.isGrowingCard()) {
+      const factor = this.getScaleFactor(msElapsed);
+      return ` scale(${factor}, ${factor})`;
+    } else {
+      return '';
+    }
+  }
+
+  getScaleFactor(msElapsed) {
+    if (this.msUntilFullGrowth < msElapsed) {
+      return (2 - msElapsed / this.msUntilFullGrowth) * this.growTo;
+    } else {
+      return (msElapsed / this.msUntilFullGrowth) * this.growTo;
+    }
+  }
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (Card);
+
+/***/ }),
+
 /***/ "./src/click_manager.js":
 /*!******************************!*\
   !*** ./src/click_manager.js ***!
@@ -190,8 +393,9 @@ class ClickManager {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _randomness_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./randomness_util */ "./src/randomness_util.js");
-/* harmony import */ var _modal_manager__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modal_manager */ "./src/modal_manager.js");
+/* harmony import */ var _modal_manager__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modal_manager */ "./src/modal_manager.js");
+/* harmony import */ var _card__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./card */ "./src/card.js");
+// import { randomNum, buildCard } from './randomness_util';
 
 
 /*
@@ -216,101 +420,55 @@ class Game {
     this.cardId = 0;
     this.currentLevel = 1;
     this.levels = levels;
-    this.modalManager = new _modal_manager__WEBPACK_IMPORTED_MODULE_1__["default"](this);
+    this.modalManager = new _modal_manager__WEBPACK_IMPORTED_MODULE_0__["default"](this);
     
-    // declutter constructor
-    this.renderCard = this.renderCard.bind(this);
-    this.renderModal = this.renderModal.bind(this);
-    this.submitGuess = this.submitGuess.bind(this);
-    this.playLevel = this.playLevel.bind(this);
-    this.tryLevelAgain = this.tryLevelAgain.bind(this);
-    this.nextLevel = this.nextLevel.bind(this);
     this.levelTextAnimation = this.levelTextAnimation.bind(this);
   }
 
-  // options takes keys top, left, xVel, yVel, startTime, optionally angularVel, scaleTime
-  renderCard(options) {
-    setTimeout(() => {
-      // cardId keeps track of how many cards have been rendered - move to class having to do with rendering cards
-      this.cardId += 1;
-      // belongs to lower level class
-      const num = Object(_randomness_util__WEBPACK_IMPORTED_MODULE_0__["randomNum"])();
+  playLevel() {
+    setTimeout(() => this.levelTextAnimation(), 1000);
+    setTimeout(this.renderAllCards.bind(this), 4000);
+  }
 
-      // make into method (this.changeCount(card))
-      this.count += this.hilo_val(num);
+  levelTextAnimation() {
+    const levelText = document.createElement("div");
+    levelText.setAttribute("class", "level-text");
+    levelText.innerText = `Level ${this.currentLevel}`;
+    document.getElementById("game-board").appendChild(levelText);
 
-      // constructor of card class
-      const card = Object(_randomness_util__WEBPACK_IMPORTED_MODULE_0__["buildCard"])(num, this.cardId);
-  
-      card.style.top = `${options.top}px`;
-      card.style.left = `${options.left}px`;
+    let start;
 
-      if (options.scaleTime) card.style.display = "none";
-
-      // maybe make board class
-      document.getElementById("game-board").appendChild(card);
-      
-      let start;
-      const that = this;
-      
-      function step(timestamp) {
-        if (start === undefined)
+    function step(timestamp) {
+      if (start === undefined)
         start = timestamp;
-        const elapsed = timestamp - start;
-        const xTrans = options.xVel * elapsed;
-        const yTrans = options.yVel * elapsed;
-        
-        let transString = 'translateX(' + (xTrans) + 'px) translateY(' + (yTrans) + 'px)';
-        if (options.angularVel) {
-          transString +=' rotate(' + (options.angularVel * elapsed) + 'deg)';
-        }
+      const elapsed = timestamp - start;
+      const secsElapsed = elapsed / 1000;
 
-        
-        if (options.scaleTime) {
-          let factor
-          const scaleTo = options.growTo ? options.growTo : 1;
-          if (options.scaleTime < elapsed) {
-            factor = (2 - elapsed / options.scaleTime) * scaleTo;
-          } else {
-            factor = (elapsed / options.scaleTime) * scaleTo;
-          }
-          transString += "scale(" + factor + ", " + factor + ")";
-          
-          if (elapsed > 100) {
-            card.style.display = "block";
-          }
+      const pos = -21 + 1106 * secsElapsed - 674.3 * secsElapsed ** 2 + 146.66 * secsElapsed ** 3;
+      const slant = (1106 - 1349 * secsElapsed + 440 * secsElapsed ** 2) / 20;
 
-          if (elapsed > 2 * options.scaleTime) {
-            if (parseInt(card.id) === that.levels[that.currentLevel - 1].length) {
-              setTimeout(that.renderModal, 800);
-            }
-            card.remove();
-            return;
-          }
-        }
-    
-        card.style.transform = transString;
-    
-        if (that.inBounds(options.left + xTrans, options.top + yTrans)) {
-          window.requestAnimationFrame(step);
-        } else {
-          if (parseInt(card.id) === that.levels[that.currentLevel - 1].length) {
-            setTimeout(that.renderModal, 800);
-          }
-          card.remove();
-        }
+      levelText.style.transform = 'translateX(' + pos + 'px) skewX(' + slant + 'deg)';
+
+      if (elapsed < 3300) {
+        window.requestAnimationFrame(step);
+      } else {
+        levelText.remove();
       }
-    
-      card.onload = () => window.requestAnimationFrame(step);
-    }, options.startTime);
+    }
+
+    window.requestAnimationFrame(step);
   }
 
-  // move to board/card class
-  inBounds(xPos, yPos) {
-    return xPos >= -150 && xPos <= 1000 && yPos >= -200 && yPos <= 550;
+  renderAllCards() {
+    this.levels[this.currentLevel - 1].forEach(cardEffects => {
+      this.cardId += 1;
+      const card = new _card__WEBPACK_IMPORTED_MODULE_1__["default"](cardEffects, this);
+      this.count += card.hiLoIndexValue;
+      card.setRenderTimer();
+    })
   }
 
-  renderModal() {
+  endLevel() {
     this.modalManager.renderGuessModal();
   }
 
@@ -358,56 +516,11 @@ class Game {
     this.playLevel();
   }
 
-  playLevel() {
-    setTimeout(() => this.levelTextAnimation(), 1000);
-    setTimeout(() => this.levels[this.currentLevel - 1].forEach(card => {
-      this.renderCard(card);
-    }), 4000);
-  }
-
   playSpecificLevel(level) {
     this.currentLevel = level;
     this.playLevel();
   }
 
-  levelTextAnimation() {
-    const levelText = document.createElement("div");
-    levelText.setAttribute("class", "level-text");
-    levelText.innerText = `Level ${this.currentLevel}`;
-    document.getElementById("game-board").appendChild(levelText);
-
-    let start;
-
-    function step(timestamp) {
-      if (start === undefined)
-        start = timestamp;
-      const elapsed = timestamp - start;
-      const secsElapsed = elapsed / 1000;
-
-      const pos = -21 + 1106 * secsElapsed - 674.3 * secsElapsed ** 2 + 146.66 * secsElapsed ** 3;
-      const slant = (1106 - 1349 * secsElapsed + 440 * secsElapsed ** 2) / 20;
-
-      levelText.style.transform = 'translateX(' + pos + 'px) skewX(' + slant + 'deg)';
-
-      if (elapsed < 3300) {
-        window.requestAnimationFrame(step);
-      } else {
-        levelText.remove();
-      }
-    }
-
-    window.requestAnimationFrame(step);
-  }
-
-  hilo_val(num) {
-    if (num >= 2 && num <= 6) {
-      return 1;
-    } else if (num >= 7 && num <= 9) {
-      return 0;
-    } else {
-      return -1;
-    }
-  }
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (Game);
@@ -529,21 +642,21 @@ __webpack_require__.r(__webpack_exports__);
     left: -120,
     xVel: 0.2,
     yVel: 0,
-    startTime: 1000
+    msUntilRender: 1000
   },
   {
     top: 170,
     left: -120,
     xVel: 0.2,
     yVel: 0,
-    startTime: 6000
+    msUntilRender: 6000
   },
   {
     top: 170,
     left: -120,
     xVel: 0.2,
     yVel: 0,
-    startTime: 11000
+    msUntilRender: 11000
   }
 ]);
 
@@ -564,28 +677,28 @@ __webpack_require__.r(__webpack_exports__);
     left: -120,
     xVel: 0.3,
     yVel: 0,
-    startTime: 1000
+    msUntilRender: 1000
   },
   {
     top: -150,
     left: 400,
     xVel: 0,
     yVel: 0.2,
-    startTime: 4000
+    msUntilRender: 4000
   },
   {
     top: 170,
     left: 900,
     xVel: -0.3,
     yVel: 0,
-    startTime: 6800
+    msUntilRender: 6800
   },
   {
     top: 500,
     left: 400,
     xVel: 0,
     yVel: -0.2,
-    startTime: 9800
+    msUntilRender: 9800
   }
 ]);
 
@@ -606,56 +719,56 @@ __webpack_require__.r(__webpack_exports__);
     left: -120,
     xVel: 0.25,
     yVel: 0,
-    startTime: 1000
+    msUntilRender: 1000
   },
   {
     top: 100,
     left: 900,
     xVel: -0.25,
     yVel: 0,
-    startTime: 1000
+    msUntilRender: 1000
   },
   {
     top: 500,
     left: 500,
     xVel: -0.16,
     yVel: -0.16,
-    startTime: 4200
+    msUntilRender: 4200
   },
   {
     top: -150,
     left: 250,
     xVel: 0.16,
     yVel: 0.16,
-    startTime: 4200
+    msUntilRender: 4200
   },
   {
     top: -150,
     left: 250,
     xVel: 0,
     yVel: 0.22,
-    startTime: 7500
+    msUntilRender: 7500
   },
   {
     top: 500,
     left: 500,
     xVel: 0,
     yVel: -0.22,
-    startTime: 7500
+    msUntilRender: 7500
   },
   {
     top: 350,
     left: -120,
     xVel: 0.16,
     yVel: -0.16,
-    startTime: 10200
+    msUntilRender: 10200
   },
   {
     top: 50,
     left: 900,
     xVel: -0.16,
     yVel: 0.16,
-    startTime: 10200
+    msUntilRender: 10200
   },
 ]);
 
@@ -676,65 +789,65 @@ __webpack_require__.r(__webpack_exports__);
     left: 250,
     xVel: 0.17,
     yVel: 0.30,
-    startTime: 1000
+    msUntilRender: 1000
   },
   {
     top: 500,
     left: 250,
     xVel: 0.17,
     yVel: -0.30,
-    startTime: 2500
+    msUntilRender: 2500
   },
   {
     top: 500,
     left: 550,
     xVel: -0.17,
     yVel: -0.30,
-    startTime: 4000
+    msUntilRender: 4000
   },
   {
     top: -150,
     left: 550,
     xVel: -0.17,
     yVel: 0.30,
-    startTime: 5500 
+    msUntilRender: 5500 
   },
   {
     top: -150,
     left: 250,
     xVel: 0.17,
     yVel: 0.30,
-    startTime: 6800
+    msUntilRender: 6800
   },
   {
     top: 500,
     left: 250,
     xVel: 0.17,
     yVel: -0.30,
-    startTime: 8100
+    msUntilRender: 8100
   },
   {
     top: 500,
     left: 550,
     xVel: -0.17,
     yVel: -0.30,
-    startTime: 9400
+    msUntilRender: 9400
   },
   {
     top: -150,
     left: 550,
     xVel: -0.17,
     yVel: 0.30,
-    startTime: 10700 
+    msUntilRender: 10700 
   },
   {
     top: 200,
     left: 150,
     xVel: 0,
     yVel: 0,
-    startTime: 12000,
+    msUntilRender: 12000,
     angularVel: 0.15,
-    scaleTime: 3000,
+    msUntilFullGrowth: 3000,
     growTo: 1.3 
   },
   {
@@ -742,9 +855,9 @@ __webpack_require__.r(__webpack_exports__);
     left: 400,
     xVel: 0,
     yVel: 0,
-    startTime: 12000,
+    msUntilRender: 12000,
     angularVel: 0.15,
-    scaleTime: 3000,
+    msUntilFullGrowth: 3000,
     growTo: 1.3
   },
   {
@@ -752,9 +865,9 @@ __webpack_require__.r(__webpack_exports__);
     left: 650,
     xVel: 0,
     yVel: 0,
-    startTime: 12000,
+    msUntilRender: 12000,
     angularVel: 0.15,
-    scaleTime: 3000,
+    msUntilFullGrowth: 3000,
     growTo: 1.3 
   },
 ]);
@@ -776,107 +889,107 @@ __webpack_require__.r(__webpack_exports__);
     left: -120,
     xVel: 0.45,
     yVel: 0.15,
-    startTime: 1000
+    msUntilRender: 1000
   },
   {
     top: 500,
     left: 600,
     xVel: -0.08,
     yVel: -0.40,
-    startTime: 2000
+    msUntilRender: 2000
   },
   {
     top: 370,
     left: -120,
     xVel: 0.39,
     yVel: -0.17,
-    startTime: 3200
+    msUntilRender: 3200
   },
   {
     top: -150,
     left: 700,
     xVel: -0.35,
     yVel: 0.25,
-    startTime: 4500
+    msUntilRender: 4500
   },
   {
     top: 30,
     left: -120,
     xVel: 0.50,
     yVel: 0,
-    startTime: 6000
+    msUntilRender: 6000
   },
   {
     top: 170,
     left: 900,
     xVel: -0.50,
     yVel: 0,
-    startTime: 6500
+    msUntilRender: 6500
   },
   {
     top: 310,
     left: -120,
     xVel: 0.50,
     yVel: 0,
-    startTime: 7000
+    msUntilRender: 7000
   },
   {
     top: -150,
     left: 150,
     xVel: 0,
     yVel: 0.40,
-    startTime: 9500
+    msUntilRender: 9500
   },
   {
     top: 500,
     left: 400,
     xVel: 0,
     yVel: -0.40,
-    startTime: 10000
+    msUntilRender: 10000
   },
   {
     top: -150,
     left: 650,
     xVel: 0,
     yVel: 0.40,
-    startTime: 10500
+    msUntilRender: 10500
   },
   {
     top: -150,
     left: -100,
     xVel: 0.40,
     yVel: 0.25,
-    startTime: 12000
+    msUntilRender: 12000
   },
   {
     top: -150,
     left: 900,
     xVel: -0.40,
     yVel: 0.25,
-    startTime: 12000
+    msUntilRender: 12000
   },
   {
     top: 500,
     left: -100,
     xVel: 0.40,
     yVel: -0.25,
-    startTime: 13700
+    msUntilRender: 13700
   },
   {
     top: 500,
     left: 900,
     xVel: -0.40,
     yVel: -0.25,
-    startTime: 13700
+    msUntilRender: 13700
   },
   {
     top: 100,
     left: 120,
     xVel: 0,
     yVel: 0,
-    startTime: 15500,
+    msUntilRender: 15500,
     angularVel: -0.18,
-    scaleTime: 2500,
+    msUntilFullGrowth: 2500,
     growTo: 1.3 
   },
   {
@@ -884,9 +997,9 @@ __webpack_require__.r(__webpack_exports__);
     left: 680,
     xVel: 0,
     yVel: 0,
-    startTime: 15500,
+    msUntilRender: 15500,
     angularVel: 0.18,
-    scaleTime: 2500,
+    msUntilFullGrowth: 2500,
     growTo: 1.15 
   },
   {
@@ -894,9 +1007,9 @@ __webpack_require__.r(__webpack_exports__);
     left: 120,
     xVel: 0,
     yVel: 0,
-    startTime: 15500,
+    msUntilRender: 15500,
     angularVel: 0.18,
-    scaleTime: 2500,
+    msUntilFullGrowth: 2500,
     growTo: 1.15 
   },
   {
@@ -904,9 +1017,9 @@ __webpack_require__.r(__webpack_exports__);
     left: 680,
     xVel: 0,
     yVel: 0,
-    startTime: 15500,
+    msUntilRender: 15500,
     angularVel: -0.18,
-    scaleTime: 2500,
+    msUntilFullGrowth: 2500,
     growTo: 1.15
   },
   {
@@ -914,8 +1027,8 @@ __webpack_require__.r(__webpack_exports__);
     left: 400,
     xVel: 0,
     yVel: 0,
-    startTime: 15500,
-    scaleTime: 2500,
+    msUntilRender: 15500,
+    msUntilFullGrowth: 2500,
   },
 ]);
 
@@ -936,56 +1049,56 @@ __webpack_require__.r(__webpack_exports__);
     left: -100,
     xVel: 0.35,
     yVel: 0,
-    startTime: 1000
+    msUntilRender: 1000
   },
   {
     top: 285,
     left: -100,
     xVel: 0.35,
     yVel: 0,
-    startTime: 1000
+    msUntilRender: 1000
   },
   {
     top: -150,
     left: 300,
     xVel: 0,
     yVel: 0.32,
-    startTime: 2500
+    msUntilRender: 2500
   },
   {
     top: -150,
     left: 500,
     xVel: 0,
     yVel: 0.32,
-    startTime: 2500
+    msUntilRender: 2500
   },
   {
     top: 65,
     left: 900,
     xVel: -0.35,
     yVel: 0,
-    startTime: 3500
+    msUntilRender: 3500
   },
   {
     top: 285,
     left: 900,
     xVel: -0.35,
     yVel: 0,
-    startTime: 3500
+    msUntilRender: 3500
   },
   {
     top: 500,
     left: 300,
     xVel: 0,
     yVel: -0.32,
-    startTime: 5000
+    msUntilRender: 5000
   },
   {
     top: 500,
     left: 500,
     xVel: 0,
     yVel: -0.32,
-    startTime: 5000
+    msUntilRender: 5000
   },
   {
     top: -150,
@@ -993,7 +1106,7 @@ __webpack_require__.r(__webpack_exports__);
     xVel: 0.35,
     yVel: 0.20,
     angularVel: 0.2,
-    startTime: 7000
+    msUntilRender: 7000
   },
   {
     top: -150,
@@ -1001,7 +1114,7 @@ __webpack_require__.r(__webpack_exports__);
     xVel: -0.35,
     yVel: 0.20,
     angularVel: -0.2,
-    startTime: 8000
+    msUntilRender: 8000
   },
   {
     top: 500,
@@ -1009,7 +1122,7 @@ __webpack_require__.r(__webpack_exports__);
     xVel: -0.35,
     yVel: -0.20,
     angularVel: -0.2,
-    startTime: 9000
+    msUntilRender: 9000
   },
   {
     top: 500,
@@ -1017,91 +1130,91 @@ __webpack_require__.r(__webpack_exports__);
     xVel: 0.35,
     yVel: -0.20,
     angularVel: 0.2,
-    startTime: 10000
+    msUntilRender: 10000
   },
   {
     top: -150,
     left: 200,
     xVel: 0,
     yVel: 0.36,
-    startTime: 12000
+    msUntilRender: 12000
   },
   {
     top: 150,
     left: -100,
     xVel: 0.42,
     yVel: 0,
-    startTime: 12700
+    msUntilRender: 12700
   },
   {
     top: 500,
     left: 600,
     xVel: 0,
     yVel: -0.36,
-    startTime: 13500
+    msUntilRender: 13500
   },
   {
     top: 270,
     left: 900,
     xVel: -0.42,
     yVel: 0,
-    startTime: 14200
+    msUntilRender: 14200
   },
   {
     top: -150,
     left: 200,
     xVel: 0,
     yVel: 0.36,
-    startTime: 15000
+    msUntilRender: 15000
   },
   {
     top: 150,
     left: -100,
     xVel: 0.42,
     yVel: 0,
-    startTime: 15800
+    msUntilRender: 15800
   },
   {
     top: 500,
     left: 600,
     xVel: 0,
     yVel: -0.36,
-    startTime: 16600
+    msUntilRender: 16600
   },
   {
     top: 270,
     left: 900,
     xVel: -0.42,
     yVel: 0,
-    startTime: 17400
+    msUntilRender: 17400
   },
   {
     top: -150,
     left: 200,
     xVel: 0,
     yVel: 0.36,
-    startTime: 18200
+    msUntilRender: 18200
   },
   {
     top: 150,
     left: -100,
     xVel: 0.42,
     yVel: 0,
-    startTime: 19000
+    msUntilRender: 19000
   },
   {
     top: 500,
     left: 600,
     xVel: 0,
     yVel: -0.36,
-    startTime: 19800
+    msUntilRender: 19800
   },
   {
     top: 270,
     left: 900,
     xVel: -0.42,
     yVel: 0,
-    startTime: 20600
+    msUntilRender: 20600
   },
 ]);
 
@@ -1174,7 +1287,12 @@ class ModalManager {
 
   installNextLevelListener() {
     const nextLevelButton = this.getHtmlById('next-level');
-    nextLevelButton.addClickListener(this.playNextLevel.bind(this));
+    nextLevelButton.addClickListener(this.hideModalAndStartNextLevel.bind(this));
+  }
+
+  hideModalAndStartNextLevel() {
+    this.hideModal();
+    this.playNextLevel();
   }
 
   renderLevelLoss(actualCount) {
@@ -1188,41 +1306,16 @@ class ModalManager {
 
   installTryLevelAgainListener() {
     const tryAgainButton = this.getHtmlById("try-again");
-    tryAgainButton.addClickListener(this.tryLevelAgain.bind(this));
+    tryAgainButton.addClickListener(this.hideModalAndTryAgain.bind(this));
+  }
+
+  hideModalAndTryAgain() {
+    this.hideModal();
+    this.tryLevelAgain();
   }
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (ModalManager);
-
-/***/ }),
-
-/***/ "./src/randomness_util.js":
-/*!********************************!*\
-  !*** ./src/randomness_util.js ***!
-  \********************************/
-/*! exports provided: randomNum, buildCard */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "randomNum", function() { return randomNum; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "buildCard", function() { return buildCard; });
-const randomNum = () => {
-  return Math.floor((Math.random() * 13) + 1);
-}
-
-const randomSuit = () => {
-  const idx = Math.floor(Math.random() * 4);
-  return ["HEART-", "DIAMOND-", "CLUB-", "SPADE-"][idx];
-}
-
-const buildCard = (num, id) => {
-  const card = document.createElement("img");
-  card.setAttribute("src", `./dist/card_imgs/${randomSuit()}${num}.svg`);
-  card.setAttribute("class", "card");
-  card.setAttribute("id", id);
-  return card;
-}
 
 /***/ })
 
