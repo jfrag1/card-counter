@@ -65,7 +65,7 @@ class Card {
   }
 
   setRenderTimer() {
-    setTimeout(this.render.bind(this), this.msUntilRender);
+    this.renderTimer = setTimeout(this.render.bind(this), this.msUntilRender);
   }
 
   render() {
@@ -189,6 +189,11 @@ class Card {
     } else {
       return (msElapsed / this.msUntilFullGrowth) * this.growTo;
     }
+  }
+
+  cancelRenderTimer() {
+    if (this.renderTimer)
+      clearTimeout(this.renderTimer);
   }
 }
 

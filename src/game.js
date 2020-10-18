@@ -5,6 +5,7 @@ class Game {
   constructor(levels) {
     this.count = 0;
     this.cardId = 0;
+    this.cards = [];
     this.currentLevel = 1;
     this.levels = levels;
     this.modalManager = new ModalManager(this);
@@ -15,6 +16,7 @@ class Game {
   playLevel() {
     setTimeout(() => this.levelTextAnimation(), 1000);
     setTimeout(this.renderAllCards.bind(this), 4000);
+    setTimeout(this.renderResetButton.bind(this), 4000);
   }
 
   levelTextAnimation() {
@@ -50,6 +52,7 @@ class Game {
     this.levels[this.currentLevel - 1].forEach(cardEffects => {
       this.cardId += 1;
       const card = new Card(cardEffects, this);
+      this.cards.push(card);
       this.count += card.hiLoIndexValue;
       card.setRenderTimer();
     })
@@ -90,6 +93,13 @@ class Game {
     countGuess.innerText = 0;
     this.count = 0;
     this.cardId = 0;
+    this.cards = [];
+    this.removeResetButton();
+  }
+
+  removeResetButton() {
+    const resetButton = document.getElementById("reset-button");
+    resetButton.remove();
   }
 
   tryLevelAgain() {
@@ -116,7 +126,7 @@ class Game {
       levelIndex.appendChild(levelButton);
     }
   }
-  
+
   generateRandomSuit() {
     const randomIndex = Math.floor(Math.random() * 4);
     return ["HEART", "DIAMOND", "CLUB", "SPADE"][randomIndex];
@@ -132,6 +142,22 @@ class Game {
     return levelButton;
   }
 
+  reset() {
+    this.cards.forEach(card => {
+      card.cancelRenderTimer();
+      card.imageElement.remove();
+    });
+    this.resetGameState();
+    this.modalManager.goBackToMenu();
+  }
+
+  renderResetButton() {
+    const resetButton = document.createElement("button");
+    resetButton.setAttribute("id", "reset-button");
+    resetButton.innerText = "Reset";
+    resetButton.addEventListener("click", this.reset.bind(this));
+    document.getElementById("reset-button-holder").appendChild(resetButton);
+  }
 }
 
 export default Game;
