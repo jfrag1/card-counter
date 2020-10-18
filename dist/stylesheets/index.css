@@ -212,6 +212,22 @@ button:hover {
   transition: background 0.3s;
 }
 
+#reset-button-holder {
+  position: relative;
+}
+
+#reset-button {
+  background-color: white;
+  color: black;
+  position: absolute;
+  top: 0px;
+  left: 200px;
+}
+
+#reset-button:hover {
+  background-color: lightgray;
+}
+
 .level-text {
   position: absolute;
   top: 210px;

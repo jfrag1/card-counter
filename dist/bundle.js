@@ -162,7 +162,7 @@ class Card {
   }
 
   setRenderTimer() {
-    setTimeout(this.render.bind(this), this.msUntilRender);
+    this.renderTimer = setTimeout(this.render.bind(this), this.msUntilRender);
   }
 
   render() {
@@ -287,6 +287,11 @@ class Card {
       return (msElapsed / this.msUntilFullGrowth) * this.growTo;
     }
   }
+
+  cancelRenderTimer() {
+    if (this.renderTimer)
+      clearTimeout(this.renderTimer);
+  }
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (Card);
@@ -406,6 +411,7 @@ class Game {
   constructor(levels) {
     this.count = 0;
     this.cardId = 0;
+    this.cards = [];
     this.currentLevel = 1;
     this.levels = levels;
     this.modalManager = new _modal_manager__WEBPACK_IMPORTED_MODULE_0__["default"](this);
@@ -416,6 +422,7 @@ class Game {
   playLevel() {
     setTimeout(() => this.levelTextAnimation(), 1000);
     setTimeout(this.renderAllCards.bind(this), 4000);
+    setTimeout(this.renderResetButton.bind(this), 4000);
   }
 
   levelTextAnimation() {
@@ -451,6 +458,7 @@ class Game {
     this.levels[this.currentLevel - 1].forEach(cardEffects => {
       this.cardId += 1;
       const card = new _card__WEBPACK_IMPORTED_MODULE_1__["default"](cardEffects, this);
+      this.cards.push(card);
       this.count += card.hiLoIndexValue;
       card.setRenderTimer();
     })
@@ -491,6 +499,13 @@ class Game {
     countGuess.innerText = 0;
     this.count = 0;
     this.cardId = 0;
+    this.cards = [];
+    this.removeResetButton();
+  }
+
+  removeResetButton() {
+    const resetButton = document.getElementById("reset-button");
+    resetButton.remove();
   }
 
   tryLevelAgain() {
@@ -517,7 +532,7 @@ class Game {
       levelIndex.appendChild(levelButton);
     }
   }
-  
+
   generateRandomSuit() {
     const randomIndex = Math.floor(Math.random() * 4);
     return ["HEART", "DIAMOND", "CLUB", "SPADE"][randomIndex];
@@ -533,6 +548,22 @@ class Game {
     return levelButton;
   }
 
+  reset() {
+    this.cards.forEach(card => {
+      card.cancelRenderTimer();
+      card.imageElement.remove();
+    });
+    this.resetGameState();
+    this.modalManager.goBackToMenu();
+  }
+
+  renderResetButton() {
+    const resetButton = document.createElement("button");
+    resetButton.setAttribute("id", "reset-button");
+    resetButton.innerText = "Reset";
+    resetButton.addEventListener("click", this.reset.bind(this));
+    document.getElementById("reset-button-holder").appendChild(resetButton);
+  }
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (Game);
