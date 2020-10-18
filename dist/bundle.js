@@ -159,6 +159,7 @@ class Card {
     this.angularVel = animationEffects.angularVel;
     this.msUntilFullGrowth = animationEffects.msUntilFullGrowth;
     this.growTo = animationEffects.growTo || 1;
+    this.msUntilDisappearing = animationEffects.msUntilDisappearing;
   }
 
   setRenderTimer() {
@@ -211,12 +212,22 @@ class Card {
   isReadyForRemoval(msElapsed) {
     if (this.isGrowingCard()) {
       if (this.isFullyShrunk(msElapsed)) return true;
+    } else if (this.isDisappearingCard()) {
+      if (this.isExpired(msElapsed)) return true;
     }
     return (this.isOutOfBounds(msElapsed));
   }
 
   isFullyShrunk(msElapsed) {
     return (msElapsed > 2 * this.msUntilFullGrowth);
+  }
+
+  isDisappearingCard() {
+    return Boolean(this.msUntilDisappearing);
+  }
+
+  isExpired(msElapsed) {
+    return (msElapsed > this.msUntilDisappearing);
   }
 
   isOutOfBounds(msElapsed) {
@@ -637,6 +648,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+/*
+When the page loads, the level menu appears.
+Clicking on a card starts that level.
+When the level starts, the menu disappears.
+Next, level text is animated across the screen.
+Then cards begin to appear moving across the screen
+*/
+
 document.addEventListener("DOMContentLoaded", () => {
   const game = new _game__WEBPACK_IMPORTED_MODULE_0__["default"](_levels_all_levels__WEBPACK_IMPORTED_MODULE_1__["default"]);
   game.renderLevelMenu();
@@ -661,6 +680,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _level4__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./level4 */ "./src/levels/level4.js");
 /* harmony import */ var _level5__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./level5 */ "./src/levels/level5.js");
 /* harmony import */ var _level6__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./level6 */ "./src/levels/level6.js");
+/* harmony import */ var _level7__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./level7 */ "./src/levels/level7.js");
 
 
 
@@ -668,7 +688,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-/* harmony default export */ __webpack_exports__["default"] = ([_level1__WEBPACK_IMPORTED_MODULE_0__["default"], _level2__WEBPACK_IMPORTED_MODULE_1__["default"], _level3__WEBPACK_IMPORTED_MODULE_2__["default"], _level4__WEBPACK_IMPORTED_MODULE_3__["default"], _level5__WEBPACK_IMPORTED_MODULE_4__["default"], _level6__WEBPACK_IMPORTED_MODULE_5__["default"]]);
+
+/* harmony default export */ __webpack_exports__["default"] = ([_level1__WEBPACK_IMPORTED_MODULE_0__["default"], _level2__WEBPACK_IMPORTED_MODULE_1__["default"], _level3__WEBPACK_IMPORTED_MODULE_2__["default"], _level4__WEBPACK_IMPORTED_MODULE_3__["default"], _level5__WEBPACK_IMPORTED_MODULE_4__["default"], _level6__WEBPACK_IMPORTED_MODULE_5__["default"], _level7__WEBPACK_IMPORTED_MODULE_6__["default"]]);
 
 /***/ }),
 
@@ -1260,6 +1281,136 @@ __webpack_require__.r(__webpack_exports__);
     xVel: -0.42,
     yVel: 0,
     msUntilRender: 20600
+  },
+]);
+
+/***/ }),
+
+/***/ "./src/levels/level7.js":
+/*!******************************!*\
+  !*** ./src/levels/level7.js ***!
+  \******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = ([
+  {
+    top: 300,
+    left: 300,
+    xVel: 0.1,
+    yVel: -0.1,
+    msUntilRender: 1000,
+    msUntilFullGrowth: 1000,
+    angularVel: 0.2
+  },
+  {
+    top: 100,
+    left: 300,
+    xVel: 0.1,
+    yVel: 0.1,
+    msUntilRender: 1700,
+    msUntilFullGrowth: 1000,
+    angularVel: 0.2
+  },
+  {
+    top: 100,
+    left: 550,
+    xVel: -0.1,
+    yVel: 0.1,
+    msUntilRender: 2400,
+    msUntilFullGrowth: 1000,
+    angularVel: 0.2
+  },
+  {
+    top: 300,
+    left: 550,
+    xVel: -0.1,
+    yVel: -0.1,
+    msUntilRender: 3100,
+    msUntilFullGrowth: 1000,
+    angularVel: 0.2
+  },
+  {
+    top: 50,
+    left: 50,
+    xVel: 0,
+    yVel: 0,
+    msUntilRender: 3500,
+    msUntilDisappearing: 1000
+  },
+  {
+    top: 320,
+    left: 50,
+    xVel: 0,
+    yVel: 0,
+    msUntilRender: 4000,
+    msUntilDisappearing: 1000
+  },
+  {
+    top: 320,
+    left: 750,
+    xVel: 0,
+    yVel: 0,
+    msUntilRender: 4500,
+    msUntilDisappearing: 1000
+  },
+  {
+    top: 50,
+    left: 750,
+    xVel: 0,
+    yVel: 0,
+    msUntilRender: 5000,
+    msUntilDisappearing: 1000
+  },
+  {
+    top: 50,
+    left: 400,
+    xVel: 0,
+    yVel: 0,
+    msUntilRender: 5300,
+    msUntilDisappearing: 700
+  },
+  {
+    top: 50,
+    left: 50,
+    xVel: 0,
+    yVel: 0,
+    msUntilRender: 5600,
+    msUntilDisappearing: 700
+  },
+  {
+    top: 320,
+    left: 50,
+    xVel: 0,
+    yVel: 0,
+    msUntilRender: 5900,
+    msUntilDisappearing: 700
+  },
+  {
+    top: 320,
+    left: 400,
+    xVel: 0,
+    yVel: 0,
+    msUntilRender: 6200,
+    msUntilDisappearing: 700
+  },
+  {
+    top: 320,
+    left: 750,
+    xVel: 0,
+    yVel: 0,
+    msUntilRender: 6500,
+    msUntilDisappearing: 700
+  },
+  {
+    top: 50,
+    left: 750,
+    xVel: 0,
+    yVel: 0,
+    msUntilRender: 6800,
+    msUntilDisappearing: 700
   },
 ]);
 

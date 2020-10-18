@@ -62,6 +62,7 @@ class Card {
     this.angularVel = animationEffects.angularVel;
     this.msUntilFullGrowth = animationEffects.msUntilFullGrowth;
     this.growTo = animationEffects.growTo || 1;
+    this.msUntilDisappearing = animationEffects.msUntilDisappearing;
   }
 
   setRenderTimer() {
@@ -114,12 +115,22 @@ class Card {
   isReadyForRemoval(msElapsed) {
     if (this.isGrowingCard()) {
       if (this.isFullyShrunk(msElapsed)) return true;
+    } else if (this.isDisappearingCard()) {
+      if (this.isExpired(msElapsed)) return true;
     }
     return (this.isOutOfBounds(msElapsed));
   }
 
   isFullyShrunk(msElapsed) {
     return (msElapsed > 2 * this.msUntilFullGrowth);
+  }
+
+  isDisappearingCard() {
+    return Boolean(this.msUntilDisappearing);
+  }
+
+  isExpired(msElapsed) {
+    return (msElapsed > this.msUntilDisappearing);
   }
 
   isOutOfBounds(msElapsed) {
