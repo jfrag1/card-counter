@@ -1,21 +1,5 @@
-// import { randomNum, buildCard } from './randomness_util';
 import ModalManager from './modal_manager';
 import Card from './card';
-/*
-  other duties
-    * know current level
-    * store levels
-  game flow 
-    1. choose level - handled by click manager
-    2. trigger level text animation - make details into its own class
-    3. set timeout to render each card of the level 
-      -change this => use level to make card objects all at once - know the count immediately,
-        then set timeouts for each card object
-    4. keep track of the count for each card that is rendered - pass game instance down to card class
-    5. keep track of how many cards have been rendered - know when level ends
-    6. trigger modal rendering - check correctness of guess
-    7. trigger post-guess modal rendering - defer details to modal manager class
-*/
 
 class Game {
   constructor(levels) {
@@ -122,6 +106,30 @@ class Game {
   playSpecificLevel(level) {
     this.currentLevel = level;
     this.playLevel();
+  }
+
+  renderLevelMenu() {
+    const levelIndex = document.getElementById('level-index');
+    const suit = this.generateRandomSuit();
+    for (let i = 1; i <= this.levels.length; i++) {
+      const levelButton = this.buildLevelButton(suit, i);
+      levelIndex.appendChild(levelButton);
+    }
+  }
+  
+  generateRandomSuit() {
+    const randomIndex = Math.floor(Math.random() * 4);
+    return ["HEART", "DIAMOND", "CLUB", "SPADE"][randomIndex];
+  }
+
+  buildLevelButton(suit, level) {
+    const levelButton = document.createElement('li');
+    levelButton.setAttribute('id', `level-${level}`);
+    const levelImg = document.createElement('img');
+    levelImg.setAttribute('class', 'card');
+    levelImg.setAttribute('src', `./dist/card_imgs/${suit}-${level}.svg`);
+    levelButton.appendChild(levelImg);
+    return levelButton;
   }
 
 }

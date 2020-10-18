@@ -97,14 +97,18 @@ class Card {
       else
         that.imageElement.style.display = "block"; // make sure growing cards are visible after first animation frame
       const msElapsed = timestamp - start;
-      if (that.isReadyForRemoval(msElapsed)) {
-        that.removeCardFromDOM();
-      } else {
-        that.setTransformation(msElapsed);
-        window.requestAnimationFrame(step);
-      }
+      that.continueOrEndAnimation(msElapsed, step);
     }
     window.requestAnimationFrame(step);
+  }
+
+  continueOrEndAnimation(msElapsed, step) {
+    if (this.isReadyForRemoval(msElapsed)) {
+      this.removeCardFromDOM();
+    } else {
+      this.setTransformation(msElapsed);
+      window.requestAnimationFrame(step);
+    }
   }
 
   isReadyForRemoval(msElapsed) {
