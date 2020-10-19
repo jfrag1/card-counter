@@ -681,6 +681,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _level5__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./level5 */ "./src/levels/level5.js");
 /* harmony import */ var _level6__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./level6 */ "./src/levels/level6.js");
 /* harmony import */ var _level7__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./level7 */ "./src/levels/level7.js");
+/* harmony import */ var _level_builder__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./level_builder */ "./src/levels/level_builder.js");
 
 
 
@@ -689,7 +690,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-/* harmony default export */ __webpack_exports__["default"] = ([_level1__WEBPACK_IMPORTED_MODULE_0__["default"], _level2__WEBPACK_IMPORTED_MODULE_1__["default"], _level3__WEBPACK_IMPORTED_MODULE_2__["default"], _level4__WEBPACK_IMPORTED_MODULE_3__["default"], _level5__WEBPACK_IMPORTED_MODULE_4__["default"], _level6__WEBPACK_IMPORTED_MODULE_5__["default"], _level7__WEBPACK_IMPORTED_MODULE_6__["default"]]);
+
+const level8 = new _level_builder__WEBPACK_IMPORTED_MODULE_7__["default"](40000, 700);
+level8.makeLevel();
+console.log(level8.level);
+
+/* harmony default export */ __webpack_exports__["default"] = ([_level1__WEBPACK_IMPORTED_MODULE_0__["default"], _level2__WEBPACK_IMPORTED_MODULE_1__["default"], _level3__WEBPACK_IMPORTED_MODULE_2__["default"], _level4__WEBPACK_IMPORTED_MODULE_3__["default"], _level5__WEBPACK_IMPORTED_MODULE_4__["default"], _level6__WEBPACK_IMPORTED_MODULE_5__["default"], _level7__WEBPACK_IMPORTED_MODULE_6__["default"], level8.level]);
 
 /***/ }),
 
@@ -1413,6 +1419,105 @@ __webpack_require__.r(__webpack_exports__);
     msUntilDisappearing: 700
   },
 ]);
+
+/***/ }),
+
+/***/ "./src/levels/level_builder.js":
+/*!*************************************!*\
+  !*** ./src/levels/level_builder.js ***!
+  \*************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// points at which cards are not visible
+const FAR_LEFT = -110;
+const FAR_TOP = -150;
+const FAR_RIGHT = 910;
+const FAR_BOTTOM = 510;
+
+class LevelBuilder {
+  constructor(msDuration, msBetweenCards) {
+    this.renderNextCardAt = 1000;
+    this.msDuration = msDuration;
+    this.msBetweenCards = msBetweenCards;
+    this.level = [];
+    this.fullWidth = FAR_RIGHT - FAR_LEFT;
+    this.fullHeight = FAR_BOTTOM - FAR_TOP;
+    this.arctan = Math.atan(this.fullHeight / this.fullWidth);
+  }
+
+  makeLevel() {
+    let speed = 0.2;
+    while (this.renderNextCardAt < this.msDuration) {
+      this.makeSlidingCard(speed);
+      speed += 0.02;
+    }
+  }
+
+  makeSlidingCard(speed) {
+    const theta = this.getRandomAngle();
+    const startingPos = this.getOffScreenPosition(theta);
+    const direction = theta + Math.PI;
+    const xVel = speed * Math.cos(direction);
+    const yVel = -speed * Math.sin(direction);
+    this.level.push({
+      top: startingPos[1],
+      left: startingPos[0],
+      xVel,
+      yVel,
+      msUntilRender: this.renderNextCardAt
+    });
+    this.renderNextCardAt += this.msBetweenCards;
+  }
+  
+  getRandomAngle() {
+    return Math.random() * 2 * Math.PI;
+  }
+
+  getOffScreenPosition(theta) {
+    let x, y;
+    if (this.comesFromTop(theta)) {
+      y = this.fullHeight / 2;
+      x = (this.fullHeight / 2) * Math.sqrt((1 / (Math.sin(theta) ** 2)) - 1);
+      if (theta > Math.PI / 2) x = -x;
+    } else if (this.comesFromLeft(theta)) {
+      x = -this.fullWidth / 2;
+      y = (this.fullWidth / 2) * Math.sqrt((1 / (Math.cos(theta) ** 2)) - 1);
+      if (theta > Math.PI) y = -y;
+    } else if (this.comesFromBottom(theta)) {
+      y = -this.fullHeight / 2;
+      x = (this.fullHeight / 2) * Math.sqrt((1 / (Math.sin(theta) ** 2)) - 1);
+      if (theta < 3 * Math.PI / 2) x = -x;
+    } else {
+      x = this.fullWidth / 2;
+      y = (this.fullWidth / 2) * Math.sqrt((1 / (Math.cos(theta) ** 2)) - 1);
+      if (theta > Math.PI) y = -y;
+    }
+    return this.cartToCssCoords([x, y]);
+  }
+
+
+  comesFromTop(theta) {
+    return (theta > this.arctan && theta < Math.PI - this.arctan);
+  }
+
+  comesFromLeft(theta) {
+    return (theta > Math.PI - this.arctan && theta < Math.PI + this.arctan);
+  }
+
+  comesFromBottom(theta) {
+    return (theta > Math.PI + this.arctan && theta < (2 * Math.PI) - this.arctan);
+  }
+
+  cartToCssCoords(pos) {
+    return [pos[0] + 400, -pos[1] + 180];
+  }
+
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (LevelBuilder);
 
 /***/ }),
 
