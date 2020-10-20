@@ -26,7 +26,7 @@ class LevelBuilder {
   makeSlidingCard(speed) {
     const theta = this.getRandomAngle();
     const startingPos = this.getOffScreenPosition(theta);
-    const direction = theta + Math.PI;
+    const direction = theta + Math.PI + Math.random() - 0.5;
     const xVel = speed * Math.cos(direction);
     const yVel = -speed * Math.sin(direction);
     this.level.push({
