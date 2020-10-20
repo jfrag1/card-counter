@@ -693,7 +693,6 @@ __webpack_require__.r(__webpack_exports__);
 
 const level8 = new _level_builder__WEBPACK_IMPORTED_MODULE_7__["default"](40000, 700);
 level8.makeLevel();
-console.log(level8.level);
 
 /* harmony default export */ __webpack_exports__["default"] = ([_level1__WEBPACK_IMPORTED_MODULE_0__["default"], _level2__WEBPACK_IMPORTED_MODULE_1__["default"], _level3__WEBPACK_IMPORTED_MODULE_2__["default"], _level4__WEBPACK_IMPORTED_MODULE_3__["default"], _level5__WEBPACK_IMPORTED_MODULE_4__["default"], _level6__WEBPACK_IMPORTED_MODULE_5__["default"], _level7__WEBPACK_IMPORTED_MODULE_6__["default"], level8.level]);
 
@@ -1459,7 +1458,7 @@ class LevelBuilder {
   makeSlidingCard(speed) {
     const theta = this.getRandomAngle();
     const startingPos = this.getOffScreenPosition(theta);
-    const direction = theta + Math.PI;
+    const direction = theta + Math.PI + Math.random() - 0.5;
     const xVel = speed * Math.cos(direction);
     const yVel = -speed * Math.sin(direction);
     this.level.push({

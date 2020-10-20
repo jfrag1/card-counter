@@ -9,6 +9,5 @@ import LevelBuilder from './level_builder';
 
 const level8 = new LevelBuilder(40000, 700);
 level8.makeLevel();
-console.log(level8.level);
 
 export default [level1, level2, level3, level4, level5, level6, level7, level8.level];
